@@ -80,18 +80,18 @@ textarea.form-input { resize: vertical; }
 @keyframes pulse   { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
 .animate-in { animation: fadeIn .3s ease both; }
 
-/* ── Modal ── */
+/* ── Modal base (para rutinas y otros modales simples) ── */
 .modal-overlay {
   position: fixed;
   top: 0; bottom: 0; right: 0;
-  left: 220px; /* empieza después de la sidebar */
+  left: 220px;
   background: rgba(0,0,0,.78);
   backdrop-filter: blur(4px);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   z-index: 100;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
   animation: fadeIn .2s ease;
 }
@@ -99,24 +99,96 @@ textarea.form-input { resize: vertical; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 36px 40px;
+  padding: 32px;
   width: 100%;
-  max-width: 100%;
-  height: calc(100vh - 40px);
-  max-height: calc(100vh - 40px);
+  max-width: 640px;
+  max-height: calc(100vh - 48px);
   overflow-y: auto;
-  margin: 0;
+  margin: auto;
   animation: slideUp .25s ease;
   box-shadow: var(--shadow-lg);
+}
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.modal-title { font-family: var(--font-display); font-size: 1.8rem; font-weight: 500; }
+.modal-wide { max-width: 820px !important; }
+.modal-xl   { max-width: 100% !important; }
+
+/* ── Modal de ejercicio: pantalla completa en el área de contenido ── */
+.ex-modal {
+  position: fixed;
+  top: 0; bottom: 0; right: 0;
+  left: 220px;
+  background: var(--bg-card);
   display: flex;
   flex-direction: column;
+  z-index: 101;
+  animation: slideUp .25s ease;
+  overflow: hidden;
 }
-.modal .exercise-form,
-.modal .routine-form { flex: 1; }
-.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-shrink: 0; }
-.modal-title { font-family: var(--font-display); font-size: 1.9rem; font-weight: 500; }
-.modal-wide { max-width: 100% !important; }
-.modal-xl   { max-width: 100% !important; }
+.ex-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 36px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg-card);
+}
+.ex-modal-body {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+.ex-form-fields {
+  display: flex; flex-direction: column; gap: 20px;
+  padding: 28px 32px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+.ex-form-actions {
+  display: flex; gap: 12px; justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+.ex-form-actions .btn { padding: 12px 28px; font-size: 15px; }
+.ex-form-video {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 28px 32px;
+  overflow-y: auto;
+  background: var(--bg);
+}
+.ex-video-label-row {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.ex-replace-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text-muted); font-size: 13px; font-weight: 500;
+  cursor: pointer; padding: 6px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  transition: all .15s;
+}
+.ex-replace-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ex-upload-full {
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 16px;
+  padding: 40px;
+  font-size: 16px;
+}
+.ex-upload-full .upload-placeholder { gap: 12px; font-size: 16px; }
+.ex-upload-full .upload-placeholder svg { width: 48px; height: 48px; opacity: .5; }
+.ex-upload-full small { font-size: 13px; color: var(--text-dim); }
+.ex-upload-progress-full {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+  color: var(--text-muted); font-size: 15px;
+}
+.ex-upload-progress-full svg { width: 40px; height: 40px; opacity: .5; }
+.ex-progress-pct { font-size: 22px; font-weight: 700; color: var(--accent); }
+.ex-trimmer-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
 /* ── Layout ── */
 .layout { display: flex; height: 100vh; overflow: hidden; }
@@ -538,70 +610,52 @@ textarea.form-input { min-height: 100px; resize: none; }
   .main-content { padding-bottom: 64px; }
   .content-inner { padding: 16px 12px; }
 
-  /* Modal → pantalla completa en móvil (override del left:220px del desktop) */
-  .modal-overlay {
-    left: 0;
-    align-items: stretch;
-    padding: 0;
-    background: rgba(0,0,0,.6);
-  }
-  .modal {
-    border-radius: 0;
-    padding: 20px 18px calc(env(safe-area-inset-bottom, 0px) + 80px);
-    max-width: 100%;
-    width: 100%;
-    height: 100dvh;
-    max-height: 100dvh;
+  /* Modal base en móvil */
+  .modal-overlay { left: 0; padding: 12px; }
+  .modal { max-width: 100%; max-height: calc(100dvh - 24px); }
+  .modal-header { margin-bottom: 16px; }
+  .modal-title { font-size: 1.4rem; }
+
+  /* Modal de ejercicio en móvil: columna única con scroll */
+  .ex-modal { left: 0; }
+  .ex-modal-header { padding: 18px 20px 14px; }
+  .ex-modal-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
     overflow-y: auto;
     overflow-x: hidden;
-    margin: 0;
-    animation: slideUp .25s ease;
+    height: calc(100dvh - 64px);
   }
-  .modal-wide, .modal-xl { max-width: 100% !important; }
-  .modal-header { margin-bottom: 16px; position: sticky; top: 0; background: var(--bg-card); padding: 4px 0 14px; z-index: 10; border-bottom: 1px solid var(--border); }
-  .modal-title { font-size: 1.45rem; }
-
-  /* Form móvil: volver a columna única y inputs grandes */
-  .form-input { padding: 14px; font-size: 15px; }
-  .form-label { font-size: 11px; margin-bottom: 2px; }
-  .exercise-form {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 20px;
+  .ex-form-fields {
+    padding: 20px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow-y: visible;
   }
-  /* Resetear el grid de desktop en todos los hijos */
-  .exercise-form .form-row          { grid-column: unset; }
-  .exercise-form .form-group:nth-child(2) { grid-column: unset; }
-  .exercise-form .form-group:nth-child(3) { grid-column: unset; grid-row: unset; }
-  .exercise-form .form-group:nth-child(4) { grid-column: unset; }
-  .exercise-form .form-actions       { grid-column: unset; }
-  .form-actions {
-    position: sticky;
-    bottom: 0;
-    background: var(--bg-card);
+  .ex-form-actions {
     flex-direction: column-reverse;
     gap: 10px;
-    padding: 14px 0 calc(env(safe-area-inset-bottom, 0px) + 4px);
-    margin-top: 4px;
-    border-top: 1px solid var(--border);
   }
-  .form-actions .btn {
+  .ex-form-actions .btn {
     width: 100%;
     justify-content: center;
-    padding: 16px 20px;
-    font-size: 16px;
-    border-radius: var(--radius);
+    padding: 15px 20px;
+    font-size: 15px;
   }
+  .ex-form-video { padding: 20px; background: var(--bg-card); overflow-y: visible; }
+  .ex-upload-full { min-height: 160px; padding: 32px 20px; }
+  .ex-upload-full .upload-placeholder svg { width: 36px; height: 36px; }
 
-  /* Área de upload más grande y visible en móvil */
-  .video-upload-area {
-    min-height: 140px;
-    padding: 32px 20px;
-    gap: 12px;
+  /* Form general móvil */
+  .form-input { padding: 14px; font-size: 15px; }
+  .form-label { font-size: 11px; }
+  .video-upload-area { min-height: 130px; padding: 28px 20px; }
+  .upload-placeholder { font-size: 15px; }
+  .upload-placeholder svg { width: 28px; height: 28px; }
+  .form-actions {
+    flex-direction: column-reverse; gap: 10px; padding-top: 12px;
   }
-  .upload-placeholder { font-size: 15px; gap: 10px; }
-  .upload-placeholder svg { width: 32px; height: 32px; opacity: .7; }
-  .upload-replace { font-size: 15px; }
+  .form-actions .btn { width: 100%; justify-content: center; padding: 15px; font-size: 15px; }
 
   /* Grids */
   .home-stats { grid-template-columns: 1fr 1fr; }

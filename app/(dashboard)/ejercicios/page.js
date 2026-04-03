@@ -86,53 +86,92 @@ export default function EjerciciosPage() {
 
       {showForm && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && closeForm()}>
-          <div className="modal modal-wide">
-            <div className="modal-header">
+          <div className="ex-modal">
+
+            {/* ── Header ── */}
+            <div className="ex-modal-header">
               <h2 className="modal-title">{editing ? 'Editar ejercicio' : 'Nuevo ejercicio'}</h2>
               <button className="btn-icon" onClick={closeForm}><CloseIcon /></button>
             </div>
-            <form onSubmit={handleSubmit} className="exercise-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Nombre</label>
-                  <input className="form-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Apertura de caderas" required />
+
+            <form onSubmit={handleSubmit} className="ex-modal-body">
+
+              {/* ── Panel izquierdo: campos ── */}
+              <div className="ex-form-fields">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Nombre</label>
+                    <input className="form-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Apertura de caderas" required />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Categoría</label>
+                    <select className="form-input" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+                      {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                    </select>
+                  </div>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Categoría</label>
-                  <select className="form-input" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
-                    {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                  </select>
+                  <label className="form-label">Descripción (opcional)</label>
+                  <textarea className="form-input" rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Notas sobre el ejercicio..." />
+                </div>
+                <div className="ex-form-actions">
+                  <button type="button" className="btn btn-ghost" onClick={closeForm}>Cancelar</button>
+                  <button type="submit" className="btn btn-primary" disabled={saving || uploadProgress !== null || !form.videoUrl}>
+                    {saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Agregar ejercicio'}
+                  </button>
                 </div>
               </div>
-              <div className="form-group">
-                <label className="form-label">Descripción (opcional)</label>
-                <textarea className="form-input" rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Notas..." />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Video</label>
-                <label className="video-upload-area">
-                  <input type="file" accept="video/*" onChange={handleFileChange} style={{ display: 'none' }} />
-                  {uploadProgress !== null ? (
-                    <div className="upload-progress"><div className="progress-bar"><div className="progress-fill" style={{ width: `${uploadProgress}%` }} /></div><span>{uploadProgress}% subiendo...</span></div>
-                  ) : form.videoUrl ? (
-                    <span className="upload-replace"><CheckIcon /> Video listo · Haz clic para reemplazar</span>
-                  ) : (
-                    <span className="upload-placeholder"><UploadIcon /> Seleccionar video</span>
+
+              {/* ── Panel derecho: video único ── */}
+              <div className="ex-form-video">
+                <div className="ex-video-label-row">
+                  <span className="form-label">Video del ejercicio</span>
+                  {form.videoUrl && (
+                    <label className="ex-replace-btn">
+                      <input type="file" accept="video/*" onChange={handleFileChange} style={{ display: 'none' }} />
+                      <UploadIcon /> Cambiar video
+                    </label>
                   )}
-                </label>
-              </div>
-              {form.videoUrl && form.videoDuration > 0 && (
-                <div className="form-group">
-                  <label className="form-label">Recortar fragmento</label>
-                  <VideoTrimmer videoUrl={form.videoUrl} duration={form.videoDuration} trimStart={form.trimStart} trimEnd={form.trimEnd} onChange={({ trimStart, trimEnd }) => setForm(f => ({ ...f, trimStart, trimEnd }))} />
                 </div>
-              )}
-              <div className="form-actions">
-                <button type="button" className="btn btn-ghost" onClick={closeForm}>Cancelar</button>
-                <button type="submit" className="btn btn-primary" disabled={saving || uploadProgress !== null || !form.videoUrl}>
-                  {saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Agregar ejercicio'}
-                </button>
+
+                {/* Estado 1: sin video */}
+                {!form.videoUrl && uploadProgress === null && (
+                  <label className="video-upload-area ex-upload-full">
+                    <input type="file" accept="video/*" onChange={handleFileChange} style={{ display: 'none' }} />
+                    <span className="upload-placeholder">
+                      <UploadIcon />
+                      Seleccionar video
+                      <small>Desde tu galería o cámara</small>
+                    </span>
+                  </label>
+                )}
+
+                {/* Estado 2: subiendo */}
+                {uploadProgress !== null && (
+                  <div className="ex-upload-progress-full">
+                    <UploadIcon />
+                    <p>Subiendo video...</p>
+                    <div className="progress-bar" style={{ width: '100%' }}>
+                      <div className="progress-fill" style={{ width: `${uploadProgress}%` }} />
+                    </div>
+                    <span className="ex-progress-pct">{uploadProgress}%</span>
+                  </div>
+                )}
+
+                {/* Estado 3: video listo → trimmer ocupa todo el panel */}
+                {form.videoUrl && form.videoDuration > 0 && uploadProgress === null && (
+                  <div className="ex-trimmer-wrap">
+                    <VideoTrimmer
+                      videoUrl={form.videoUrl}
+                      duration={form.videoDuration}
+                      trimStart={form.trimStart}
+                      trimEnd={form.trimEnd}
+                      onChange={({ trimStart, trimEnd }) => setForm(f => ({ ...f, trimStart, trimEnd }))}
+                    />
+                  </div>
+                )}
               </div>
+
             </form>
           </div>
         </div>
