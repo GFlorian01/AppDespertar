@@ -10,7 +10,7 @@ const CATEGORIES = [
   { value: 'elasticidad',  label: 'Elasticidad',   color: 'yellow' },
   { value: 'postura',      label: 'Postura',        color: 'danger' },
 ]
-const EMPTY = { name: '', category: 'estiramiento', description: '', videoUrl: '', publicId: '', videoDuration: 0, trimStart: 0, trimEnd: 0 }
+const EMPTY = { name: '', category: 'estiramiento', description: '', unilateral: false, videoUrl: '', publicId: '', videoDuration: 0, trimStart: 0, trimEnd: 0 }
 
 export default function EjerciciosPage() {
   const { exercises, loading, addExercise, updateExercise, deleteExercise, uploadVideo } = useExercises()
@@ -22,7 +22,7 @@ export default function EjerciciosPage() {
   const [filter,   setFilter]   = useState('all')
 
   const openNew  = () => { setEditing(null); setForm(EMPTY); setShowForm(true) }
-  const openEdit = (ex) => { setEditing(ex.id); setForm({ name: ex.name, category: ex.category, description: ex.description || '', videoUrl: ex.videoUrl, publicId: ex.publicId || '', videoDuration: ex.videoDuration || 0, trimStart: ex.trimStart || 0, trimEnd: ex.trimEnd || ex.videoDuration || 0 }); setShowForm(true) }
+  const openEdit = (ex) => { setEditing(ex.id); setForm({ name: ex.name, category: ex.category, description: ex.description || '', unilateral: ex.unilateral || false, videoUrl: ex.videoUrl, publicId: ex.publicId || '', videoDuration: ex.videoDuration || 0, trimStart: ex.trimStart || 0, trimEnd: ex.trimEnd || ex.videoDuration || 0 }); setShowForm(true) }
   const closeForm = () => { setShowForm(false); setEditing(null); setUploadProgress(null) }
 
   const handleFileChange = async (e) => {
@@ -115,6 +115,22 @@ export default function EjerciciosPage() {
                   <label className="form-label">Descripción (opcional)</label>
                   <textarea className="form-input" rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Notas sobre el ejercicio..." />
                 </div>
+
+                <label className="unilateral-toggle">
+                  <input
+                    type="checkbox"
+                    checked={form.unilateral}
+                    onChange={e => setForm(f => ({ ...f, unilateral: e.target.checked }))}
+                  />
+                  <span className="unilateral-box">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                  <span className="unilateral-label">
+                    Ejercicio unilateral
+                    <small>Se realiza por cada lado (izquierdo / derecho)</small>
+                  </span>
+                </label>
+
                 <div className="fullpanel-left-actions">
                   <button type="button" className="btn btn-ghost" onClick={closeForm}>Cancelar</button>
                   <button type="submit" className="btn btn-primary" disabled={saving || uploadProgress !== null || !form.videoUrl}>
@@ -194,6 +210,7 @@ function ExCard({ exercise, onEdit, onDelete }) {
       </div>
       <div className="exercise-card-body">
         <h3 className="exercise-name">{exercise.name}</h3>
+        {exercise.unilateral && <span className="badge-unilateral">↔ Por lado</span>}
         {exercise.description && <p className="exercise-desc">{exercise.description}</p>}
         <div className="exercise-card-actions">
           <button className="btn-icon" onClick={() => onEdit(exercise)}><EditIcon /></button>

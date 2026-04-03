@@ -20,7 +20,7 @@ export default function RutinasPage() {
   const openEdit = (r) => { setEditing(r.id); setForm({ name: r.name, description: r.description || '', exercises: r.exercises || [] }); setShowForm(true) }
   const closeForm = () => { setShowForm(false); setEditing(null) }
 
-  const addEx = (ex) => setForm(f => ({ ...f, exercises: [...f.exercises, { exerciseId: ex.id, exerciseName: ex.name, category: ex.category, videoUrl: ex.videoUrl, trimStart: ex.trimStart || 0, trimEnd: ex.trimEnd || ex.videoDuration || 0, sets: 3, reps: 10, restTime: 30 }] }))
+  const addEx = (ex) => setForm(f => ({ ...f, exercises: [...f.exercises, { exerciseId: ex.id, exerciseName: ex.name, category: ex.category, unilateral: ex.unilateral || false, videoUrl: ex.videoUrl, trimStart: ex.trimStart || 0, trimEnd: ex.trimEnd || ex.videoDuration || 0, sets: 3, reps: 10, restTime: 30 }] }))
   const updEx = (idx, field, val) => setForm(f => { const exs = [...f.exercises]; exs[idx] = { ...exs[idx], [field]: Number(val) }; return { ...f, exercises: exs } })
   const remEx = (idx) => setForm(f => ({ ...f, exercises: f.exercises.filter((_, i) => i !== idx) }))
   const moveEx = (idx, dir) => setForm(f => { const exs = [...f.exercises]; const to = idx + dir; if (to < 0 || to >= exs.length) return f; [exs[idx], exs[to]] = [exs[to], exs[idx]]; return { ...f, exercises: exs } })
@@ -129,7 +129,10 @@ export default function RutinasPage() {
                                 onMouseEnter={e => e.target.play()}
                                 onMouseLeave={e => { e.target.pause(); e.target.currentTime = ex.trimStart || 0 }} />
                             </div>
-                            <span className="picker-name">{ex.name}</span>
+                            <span className="picker-name">
+                              {ex.name}
+                              {ex.unilateral && <span className="badge-unilateral">↔ Por lado</span>}
+                            </span>
                             <PlusIcon />
                           </button>
                         ))}
@@ -147,7 +150,10 @@ export default function RutinasPage() {
                           <div key={`${ex.exerciseId}-${idx}`} className="order-item">
                             <div className="order-item-header">
                               <span className="order-num">{idx + 1}</span>
-                              <span className="order-name">{ex.exerciseName}</span>
+                              <span className="order-name">
+                                {ex.exerciseName}
+                                {ex.unilateral && <span className="badge-unilateral">↔ Por lado</span>}
+                              </span>
                               <div className="order-actions">
                                 <button type="button" className="btn-icon" onClick={() => moveEx(idx, -1)} disabled={idx === 0}><ChevronUp /></button>
                                 <button type="button" className="btn-icon" onClick={() => moveEx(idx, 1)} disabled={idx === form.exercises.length - 1}><ChevronDown /></button>
