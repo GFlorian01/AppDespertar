@@ -82,59 +82,81 @@ export default function RutinasPage() {
       )}
 
       {showForm && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && closeForm()}>
-          <div className="modal modal-xl">
-            <div className="modal-header">
-              <h2 className="modal-title">{editing ? 'Editar rutina' : 'Nueva rutina'}</h2>
-              <button className="btn-icon" onClick={closeForm}><CloseIcon /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="routine-form">
-              <div className="form-row-2">
-                <div className="form-group">
-                  <label className="form-label">Nombre</label>
-                  <input className="form-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Rutina mañanera de caderas" required />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Descripción</label>
-                  <input className="form-input" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Opcional..." />
-                </div>
+        <div className="fullpanel">
+          {/* ── Header ── */}
+          <div className="fullpanel-header">
+            <h2 className="modal-title">{editing ? 'Editar rutina' : 'Nueva rutina'}</h2>
+            <button className="btn-icon" onClick={closeForm}><CloseIcon /></button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="fullpanel-body">
+
+            {/* ── Panel izquierdo: campos y acciones ── */}
+            <div className="fullpanel-left">
+              <div className="form-group">
+                <label className="form-label">Nombre de la rutina</label>
+                <input className="form-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Rutina mañanera de caderas" required />
               </div>
-              <div className="routine-builder">
-                <div className="ex-picker">
-                  <p className="section-label">Agregar ejercicio</p>
+              <div className="form-group">
+                <label className="form-label">Descripción (opcional)</label>
+                <textarea className="form-input" rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Notas sobre la rutina..." />
+              </div>
+
+              <div className="fullpanel-left-actions">
+                <button type="button" className="btn btn-ghost" onClick={closeForm}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" disabled={saving || form.exercises.length === 0}>
+                  {saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Crear rutina'}
+                </button>
+              </div>
+            </div>
+
+            {/* ── Panel derecho: builder ── */}
+            <div className="fullpanel-right">
+              <div className="routine-builder-full">
+
+                {/* Selector de ejercicios */}
+                <div className="rpanel">
+                  <p className="section-label">Ejercicios disponibles</p>
                   {availableEx.length === 0
                     ? <p className="picker-empty">Todos los ejercicios ya están en la rutina</p>
                     : <div className="picker-list">
                         {availableEx.map(ex => (
                           <button key={ex.id} type="button" className="picker-item" onClick={() => addEx(ex)}>
-                            <div className="picker-thumb"><video src={ex.videoUrl} muted playsInline className="picker-video" onMouseEnter={e=>e.target.play()} onMouseLeave={e=>{e.target.pause();e.target.currentTime=ex.trimStart||0}} /></div>
-                            <span className="picker-name">{ex.name}</span><PlusIcon />
+                            <div className="picker-thumb">
+                              <video src={ex.videoUrl} muted playsInline className="picker-video"
+                                onMouseEnter={e => e.target.play()}
+                                onMouseLeave={e => { e.target.pause(); e.target.currentTime = ex.trimStart || 0 }} />
+                            </div>
+                            <span className="picker-name">{ex.name}</span>
+                            <PlusIcon />
                           </button>
                         ))}
                       </div>
                   }
                 </div>
-                <div className="routine-order">
-                  <p className="section-label">Orden ({form.exercises.length} ejercicios)</p>
+
+                {/* Orden y configuración */}
+                <div className="rpanel">
+                  <p className="section-label">Rutina · {form.exercises.length} ejercicios</p>
                   {form.exercises.length === 0
-                    ? <div className="order-empty"><span>← Selecciona ejercicios</span></div>
+                    ? <div className="order-empty"><span>← Selecciona ejercicios de la lista</span></div>
                     : <div className="order-list">
                         {form.exercises.map((ex, idx) => (
                           <div key={`${ex.exerciseId}-${idx}`} className="order-item">
                             <div className="order-item-header">
-                              <span className="order-num">{idx+1}</span>
+                              <span className="order-num">{idx + 1}</span>
                               <span className="order-name">{ex.exerciseName}</span>
                               <div className="order-actions">
-                                <button type="button" className="btn-icon" onClick={()=>moveEx(idx,-1)} disabled={idx===0}><ChevronUp /></button>
-                                <button type="button" className="btn-icon" onClick={()=>moveEx(idx,1)} disabled={idx===form.exercises.length-1}><ChevronDown /></button>
-                                <button type="button" className="btn-icon btn-icon-danger" onClick={()=>remEx(idx)}><CloseIcon /></button>
+                                <button type="button" className="btn-icon" onClick={() => moveEx(idx, -1)} disabled={idx === 0}><ChevronUp /></button>
+                                <button type="button" className="btn-icon" onClick={() => moveEx(idx, 1)} disabled={idx === form.exercises.length - 1}><ChevronDown /></button>
+                                <button type="button" className="btn-icon btn-icon-danger" onClick={() => remEx(idx)}><CloseIcon /></button>
                               </div>
                             </div>
                             <div className="order-item-params">
-                              {[['sets','Series'],['reps','Reps'],['restTime','Descanso (s)']].map(([field,label])=>(
+                              {[['sets', 'Series'], ['reps', 'Reps'], ['restTime', 'Descanso (s)']].map(([field, label]) => (
                                 <label key={field} className="param-group">
                                   <span>{label}</span>
-                                  <input type="number" min="1" max="300" value={ex[field]} onChange={e=>updEx(idx,field,e.target.value)} />
+                                  <input type="number" min="1" max="300" value={ex[field]} onChange={e => updEx(idx, field, e.target.value)} />
                                 </label>
                               ))}
                             </div>
@@ -143,15 +165,11 @@ export default function RutinasPage() {
                       </div>
                   }
                 </div>
+
               </div>
-              <div className="form-actions">
-                <button type="button" className="btn btn-ghost" onClick={closeForm}>Cancelar</button>
-                <button type="submit" className="btn btn-primary" disabled={saving||form.exercises.length===0}>
-                  {saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Crear rutina'}
-                </button>
-              </div>
-            </form>
-          </div>
+            </div>
+
+          </form>
         </div>
       )}
     </div>

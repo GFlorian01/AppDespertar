@@ -85,16 +85,15 @@ export default function EjerciciosPage() {
       )}
 
       {showForm && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && closeForm()}>
-          <div className="ex-modal">
+        <div className="fullpanel">
 
             {/* ── Header ── */}
-            <div className="ex-modal-header">
+            <div className="fullpanel-header">
               <h2 className="modal-title">{editing ? 'Editar ejercicio' : 'Nuevo ejercicio'}</h2>
               <button className="btn-icon" onClick={closeForm}><CloseIcon /></button>
             </div>
 
-            <form onSubmit={handleSubmit} className="ex-modal-body">
+            <form onSubmit={handleSubmit} className="fullpanel-body">
 
               {/* ── Panel izquierdo: campos ── */}
               <div className="ex-form-fields">
@@ -114,7 +113,7 @@ export default function EjerciciosPage() {
                   <label className="form-label">Descripción (opcional)</label>
                   <textarea className="form-input" rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Notas sobre el ejercicio..." />
                 </div>
-                <div className="ex-form-actions">
+                <div className="fullpanel-left-actions">
                   <button type="button" className="btn btn-ghost" onClick={closeForm}>Cancelar</button>
                   <button type="submit" className="btn btn-primary" disabled={saving || uploadProgress !== null || !form.videoUrl}>
                     {saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Agregar ejercicio'}
@@ -123,7 +122,7 @@ export default function EjerciciosPage() {
               </div>
 
               {/* ── Panel derecho: video único ── */}
-              <div className="ex-form-video">
+              <div className="fullpanel-right ex-form-video">
                 <div className="ex-video-label-row">
                   <span className="form-label">Video del ejercicio</span>
                   {form.videoUrl && (
@@ -173,7 +172,6 @@ export default function EjerciciosPage() {
               </div>
 
             </form>
-          </div>
         </div>
       )}
     </div>
