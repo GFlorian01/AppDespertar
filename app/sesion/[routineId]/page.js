@@ -37,9 +37,10 @@ export default function SessionPage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
+    if (phase === PHASE.DONE) return   // detener el contador al terminar
     const t = setInterval(() => setElapsed(Math.floor((Date.now() - sessionStart.current) / 1000)), 1000)
     return () => clearInterval(t)
-  }, [])
+  }, [phase])
 
   const currentEx = routine?.exercises[exIdx]
   const isLastSet = currentEx && setIdx >= currentEx.sets - 1
