@@ -81,12 +81,37 @@ textarea.form-input { resize: vertical; }
 .animate-in { animation: fadeIn .3s ease both; }
 
 /* ── Modal ── */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.72); backdrop-filter: blur(4px); display: flex; align-items: flex-start; justify-content: center; z-index: 100; padding: 24px 20px; overflow-y: auto; animation: fadeIn .2s ease; }
-.modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; width: 100%; max-width: 560px; max-height: calc(100vh - 48px); overflow-y: auto; margin: auto; animation: slideUp .25s ease; box-shadow: var(--shadow-lg); }
+.modal-overlay {
+  position: fixed;
+  top: 0; bottom: 0; right: 0;
+  left: 220px; /* empieza después de la sidebar */
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 100;
+  padding: 28px 24px;
+  overflow-y: auto;
+  animation: fadeIn .2s ease;
+}
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  width: 100%;
+  max-width: 680px;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  margin: auto;
+  animation: slideUp .25s ease;
+  box-shadow: var(--shadow-lg);
+}
 .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 .modal-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 500; }
-.modal-wide { max-width: 740px !important; }
-.modal-xl   { max-width: 920px !important; }
+.modal-wide { max-width: 100% !important; }
+.modal-xl   { max-width: 100% !important; }
 
 /* ── Layout ── */
 .layout { display: flex; height: 100vh; overflow: hidden; }
@@ -196,7 +221,8 @@ textarea.form-input { resize: vertical; }
 .exercise-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
 .exercise-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .exercise-card-actions { display: flex; gap: 6px; margin-top: 4px; }
-.exercise-form { display: flex; flex-direction: column; gap: 20px; }
+.exercise-form { display: flex; flex-direction: column; gap: 22px; }
+textarea.form-input { min-height: 80px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .video-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 28px 20px; border: 2px dashed var(--border); border-radius: var(--radius); cursor: pointer; transition: all .15s; min-height: 100px; text-align: center; }
 .video-upload-area:hover { border-color: var(--accent); background: var(--accent-dim2); }
@@ -487,8 +513,9 @@ textarea.form-input { resize: vertical; }
   .main-content { padding-bottom: 64px; }
   .content-inner { padding: 16px 12px; }
 
-  /* Modal → pantalla completa en móvil */
+  /* Modal → pantalla completa en móvil (override del left:220px del desktop) */
   .modal-overlay {
+    left: 0;
     align-items: stretch;
     padding: 0;
     background: rgba(0,0,0,.6);
