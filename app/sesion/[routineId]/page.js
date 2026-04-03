@@ -6,7 +6,7 @@ import { useRoutines } from '@/hooks/useRoutines'
 import { useSessions } from '@/hooks/useSessions'
 import { useAuth } from '@/contexts/AuthContext'
 
-const PHASE = { EXERCISE: 'exercise', REST: 'rest', RATE_EX: 'rate_exercise', DONE: 'done' }
+const PHASE = { EXERCISE: 'exercise', REST: 'rest', DONE: 'done' }
 
 export default function SessionPage() {
   const { routineId } = useParams()
@@ -23,7 +23,7 @@ export default function SessionPage() {
   const [restSecs,    setRestSecs]    = useState(0)
   const [elapsed,     setElapsed]     = useState(0)
   const [results,     setResults]     = useState([])
-  const [rating,      setRating]      = useState(0)
+  const [exRatings,   setExRatings]   = useState([])   // ratings por ejercicio, se llenan al final
   const [finalRating, setFinalRating] = useState(0)
   const [saving,      setSaving]      = useState(false)
 
@@ -62,28 +62,36 @@ export default function SessionPage() {
     return () => clearInterval(restRef.current)
   }, [phase])
 
-  const advanceExercise = () => { if (isLastEx) { setPhase(PHASE.DONE) } else { setExIdx(i=>i+1); setSetIdx(0); setPhase(PHASE.EXERCISE) } }
+  const recordAndAdvance = useCallback((skipped) => {
+    const completedSets = skipped ? setIdx : (currentEx?.sets ?? 0)
+    setResults(r => [...r, {
+      exerciseId:    currentEx.exerciseId,
+      exerciseName:  currentEx.exerciseName,
+      plannedSets:   currentEx.sets,
+      completedSets,
+      skipped,
+      satisfaction:  0   // se asigna en el resumen final
+    }])
+    setExRatings(r => [...r, 0])
+    if (isLastEx) { setPhase(PHASE.DONE) }
+    else          { setExIdx(i=>i+1); setSetIdx(0); setPhase(PHASE.EXERCISE) }
+  }, [currentEx, setIdx, isLastEx])
 
   const completeSet = useCallback(() => {
-    if (isLastSet) { setPhase(PHASE.RATE_EX) }
+    if (isLastSet) { recordAndAdvance(false) }
     else           { setSetIdx(i=>i+1); setPhase(PHASE.REST) }
-  }, [isLastSet])
+  }, [isLastSet, recordAndAdvance])
 
   const skipExercise = useCallback(() => {
-    setResults(r => [...r, { exerciseId: currentEx.exerciseId, exerciseName: currentEx.exerciseName, plannedSets: currentEx.sets, completedSets: setIdx, skipped: true, satisfaction: 0 }])
-    advanceExercise()
-  }, [currentEx, setIdx])
-
-  const submitRating = () => {
-    setResults(r => [...r, { exerciseId: currentEx.exerciseId, exerciseName: currentEx.exerciseName, plannedSets: currentEx.sets, completedSets: currentEx.sets, skipped: false, satisfaction: rating }])
-    setRating(0)
-    advanceExercise()
-  }
+    recordAndAdvance(true)
+  }, [recordAndAdvance])
 
   const handleSave = async () => {
     setSaving(true)
+    // Combinar ratings del resumen final en los resultados
+    const finalResults = results.map((r, i) => ({ ...r, satisfaction: exRatings[i] || 0 }))
     try {
-      await saveSession({ routineId, routineName: routine.name, totalDuration: elapsed, overallSatisfaction: finalRating, exercises: results, endTime: new Date().toISOString() })
+      await saveSession({ routineId, routineName: routine.name, totalDuration: elapsed, overallSatisfaction: finalRating, exercises: finalResults, endTime: new Date().toISOString() })
       router.push('/historial')
     } finally { setSaving(false) }
   }
@@ -95,44 +103,52 @@ export default function SessionPage() {
   if (phase === PHASE.DONE) {
     const completed = results.filter(r=>!r.skipped).length
     const skipped   = results.filter(r=>r.skipped).length
-    const avgSat    = results.filter(r=>r.satisfaction>0).reduce((a,r,_,arr)=>a+r.satisfaction/arr.length,0)
     return (
       <div className="session-done animate-in">
         <div className="done-card card">
           <div className="done-icon">🌅</div>
           <h1 className="done-title">¡Sesión completada!</h1>
           <p className="done-subtitle">{routine.name}</p>
+
           <div className="done-stats">
             <div className="done-stat"><span className="stat-value">{fmt(elapsed)}</span><span className="stat-label">Tiempo total</span></div>
             <div className="done-stat"><span className="stat-value">{completed}</span><span className="stat-label">Completados</span></div>
             <div className="done-stat"><span className="stat-value">{skipped}</span><span className="stat-label">Saltados</span></div>
-            <div className="done-stat"><span className="stat-value">{avgSat>0?avgSat.toFixed(1):'—'}</span><span className="stat-label">Satisfacción prom.</span></div>
           </div>
+
+          {/* ── Calificación por ejercicio ── */}
+          <div className="done-ex-ratings">
+            <p className="done-section-title">¿Cómo estuvo cada ejercicio?</p>
+            {results.map((r, i) => (
+              <div key={i} className={`done-ex-row ${r.skipped ? 'done-ex-skipped' : ''}`}>
+                <div className="done-ex-info">
+                  <span className="done-ex-name">{r.exerciseName}</span>
+                  {r.skipped
+                    ? <span className="done-ex-skip-badge">Saltado</span>
+                    : <span className="done-ex-sets">{r.completedSets}/{r.plannedSets} series</span>
+                  }
+                </div>
+                {!r.skipped && (
+                  <StarRating
+                    value={exRatings[i] || 0}
+                    onChange={val => setExRatings(prev => { const next = [...prev]; next[i] = val; return next })}
+                    size="sm"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* ── Calificación general ── */}
           <div className="done-rating-section">
             <p className="done-rating-label">¿Cómo te sentiste con la rutina completa?</p>
             <StarRating value={finalRating} onChange={setFinalRating} size="lg" />
           </div>
+
           <div className="done-actions">
             <button className="btn btn-ghost" onClick={()=>router.push('/rutinas')}>Volver</button>
             <button className="btn btn-primary" onClick={handleSave} disabled={saving||finalRating===0}>
               {saving?'Guardando...':'Guardar sesión'}
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (phase === PHASE.RATE_EX) {
-    return (
-      <div className="session-page">
-        <div className="rate-overlay animate-in">
-          <div className="rate-card card">
-            <p className="rate-label">¿Cómo fue</p>
-            <h2 className="rate-ex-name">{currentEx.exerciseName}?</h2>
-            <StarRating value={rating} onChange={setRating} size="lg" />
-            <button className="btn btn-primary" onClick={submitRating} disabled={rating===0}>
-              {isLastEx?'Finalizar sesión':'Siguiente ejercicio'}
             </button>
           </div>
         </div>

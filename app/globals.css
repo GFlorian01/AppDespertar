@@ -646,9 +646,19 @@ textarea.form-input { min-height: 100px; resize: none; }
 .done-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .stat-value { font-size: 22px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
 .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; text-align: center; }
-.done-rating-section { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+.done-rating-section { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; padding-top: 20px; border-top: 1px solid var(--border); }
 .done-rating-label { font-size: 15px; color: var(--text-muted); }
 .done-actions { display: flex; gap: 12px; width: 100%; justify-content: center; }
+
+/* Calificación por ejercicio en el resumen */
+.done-ex-ratings { display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 16px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.done-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 4px; }
+.done-ex-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); }
+.done-ex-row.done-ex-skipped { opacity: .55; }
+.done-ex-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.done-ex-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.done-ex-sets { font-size: 11px; color: var(--text-muted); }
+.done-ex-skip-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--danger); background: var(--danger-dim); padding: 2px 7px; border-radius: 99px; width: fit-content; }
 .session-loading { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); font-size: 16px; }
 
 /* ── History page ── */
