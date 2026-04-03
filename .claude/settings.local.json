@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(pkill -f \"vite\")",
+      "Bash(npm uninstall:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(curl -s -L http://localhost:3000/login)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(pkill -f \"next dev\")"
+    ]
+  }
+}
