@@ -75,8 +75,8 @@ textarea.form-input { resize: vertical; }
 .skeleton-card { background: var(--bg-card); border-radius: var(--radius-lg); animation: pulse 1.5s ease infinite; }
 
 /* ── Animations ── */
-@keyframes fadeIn  { from { opacity: 0; transform: translateY(8px);  } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn  { from { opacity: 0; transform: translateY(8px);  } to { opacity: 1; transform: none; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
 @keyframes pulse   { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
 .animate-in { animation: fadeIn .3s ease both; }
 

@@ -61,6 +61,7 @@ export default function EjerciciosPage() {
   const filtered = filter === 'all' ? exercises : exercises.filter(e => e.category === filter)
 
   return (
+    <>
     <div className="animate-in">
       <div className="page-header">
         <h1 className="page-title">Ejercicios</h1>
@@ -84,8 +85,9 @@ export default function EjerciciosPage() {
         </div>
       )}
 
-      {showForm && (
-        <div className="fullpanel">
+    </div>
+    {showForm && (
+      <div className="fullpanel">
 
             {/* ── Header ── */}
             <div className="fullpanel-header">
@@ -172,9 +174,9 @@ export default function EjerciciosPage() {
               </div>
 
             </form>
-        </div>
-      )}
-    </div>
+      </div>
+    )}
+    </>
   )
 }
 

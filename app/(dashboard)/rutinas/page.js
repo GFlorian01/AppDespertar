@@ -38,6 +38,7 @@ export default function RutinasPage() {
   const availableEx = exercises.filter(ex => !form.exercises.find(fe => fe.exerciseId === ex.id))
 
   return (
+    <>
     <div className="animate-in">
       <div className="page-header">
         <h1 className="page-title">Rutinas</h1>
@@ -81,8 +82,9 @@ export default function RutinasPage() {
         </div>
       )}
 
-      {showForm && (
-        <div className="fullpanel">
+    </div>
+    {showForm && (
+      <div className="fullpanel">
           {/* ── Header ── */}
           <div className="fullpanel-header">
             <h2 className="modal-title">{editing ? 'Editar rutina' : 'Nueva rutina'}</h2>
@@ -170,9 +172,9 @@ export default function RutinasPage() {
             </div>
 
           </form>
-        </div>
-      )}
-    </div>
+      </div>
+    )}
+    </>
   )
 }
 
