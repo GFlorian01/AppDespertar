@@ -91,7 +91,7 @@ textarea.form-input { resize: vertical; }
   align-items: flex-start;
   justify-content: center;
   z-index: 100;
-  padding: 28px 24px;
+  padding: 20px;
   overflow-y: auto;
   animation: fadeIn .2s ease;
 }
@@ -99,17 +99,22 @@ textarea.form-input { resize: vertical; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 32px;
+  padding: 36px 40px;
   width: 100%;
-  max-width: 680px;
-  max-height: calc(100vh - 56px);
+  max-width: 100%;
+  height: calc(100vh - 40px);
+  max-height: calc(100vh - 40px);
   overflow-y: auto;
-  margin: auto;
+  margin: 0;
   animation: slideUp .25s ease;
   box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
 }
-.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-.modal-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 500; }
+.modal .exercise-form,
+.modal .routine-form { flex: 1; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-shrink: 0; }
+.modal-title { font-family: var(--font-display); font-size: 1.9rem; font-weight: 500; }
 .modal-wide { max-width: 100% !important; }
 .modal-xl   { max-width: 100% !important; }
 
@@ -221,15 +226,35 @@ textarea.form-input { resize: vertical; }
 .exercise-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
 .exercise-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .exercise-card-actions { display: flex; gap: 6px; margin-top: 4px; }
-.exercise-form { display: flex; flex-direction: column; gap: 22px; }
-textarea.form-input { min-height: 80px; }
+/* Layout de dos columnas para el formulario de ejercicio en desktop */
+.exercise-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto 1fr auto;
+  gap: 22px 32px;
+  flex: 1;
+  min-height: 0;
+}
+.exercise-form .form-row          { grid-column: 1 / -1; } /* Nombre + Categoría — fila completa */
+.exercise-form .form-group:nth-child(2) { grid-column: 1; } /* Descripción — columna izq */
+.exercise-form .form-group:nth-child(3) { grid-column: 2; grid-row: 2 / 5; } /* Video upload — columna der, multi-fila */
+.exercise-form .form-group:nth-child(4) { grid-column: 1; } /* Recortar (cuando hay video) */
+.exercise-form .form-actions       { grid-column: 1 / -1; } /* Botones — fila completa */
+
+textarea.form-input { min-height: 100px; resize: none; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.video-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 28px 20px; border: 2px dashed var(--border); border-radius: var(--radius); cursor: pointer; transition: all .15s; min-height: 100px; text-align: center; }
+.video-upload-area {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 40px 24px;
+  border: 2px dashed var(--border); border-radius: var(--radius);
+  cursor: pointer; transition: all .15s;
+  min-height: 180px; height: 100%; text-align: center;
+}
 .video-upload-area:hover { border-color: var(--accent); background: var(--accent-dim2); }
-.upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; }
-.upload-placeholder svg { opacity: .6; }
+.upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--text-muted); font-size: 15px; }
+.upload-placeholder svg { opacity: .6; width: 36px; height: 36px; }
 .upload-replace { display: flex; align-items: center; gap: 8px; color: var(--sage); font-size: 14px; font-weight: 500; }
-.upload-progress { width: 100%; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-muted); }
+.upload-progress { width: 100%; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--text-muted); }
 .progress-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width .2s; }
 
@@ -536,10 +561,20 @@ textarea.form-input { min-height: 80px; }
   .modal-header { margin-bottom: 16px; position: sticky; top: 0; background: var(--bg-card); padding: 4px 0 14px; z-index: 10; border-bottom: 1px solid var(--border); }
   .modal-title { font-size: 1.45rem; }
 
-  /* Form móvil: inputs más grandes, más fáciles de tocar */
+  /* Form móvil: volver a columna única y inputs grandes */
   .form-input { padding: 14px; font-size: 15px; }
   .form-label { font-size: 11px; margin-bottom: 2px; }
-  .exercise-form { gap: 20px; }
+  .exercise-form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px;
+  }
+  /* Resetear el grid de desktop en todos los hijos */
+  .exercise-form .form-row          { grid-column: unset; }
+  .exercise-form .form-group:nth-child(2) { grid-column: unset; }
+  .exercise-form .form-group:nth-child(3) { grid-column: unset; grid-row: unset; }
+  .exercise-form .form-group:nth-child(4) { grid-column: unset; }
+  .exercise-form .form-actions       { grid-column: unset; }
   .form-actions {
     position: sticky;
     bottom: 0;
