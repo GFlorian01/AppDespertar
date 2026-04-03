@@ -26,6 +26,7 @@ export default function SessionPage() {
   const [exRatings,   setExRatings]   = useState([])   // ratings por ejercicio, se llenan al final
   const [finalRating, setFinalRating] = useState(0)
   const [saving,      setSaving]      = useState(false)
+  const [sidesDone,   setSidesDone]   = useState(0)    // 0=ninguno, 1=un lado, 2=ambos lados (unilateral)
 
   const videoRef     = useRef(null)
   const sessionStart = useRef(Date.now())
@@ -62,6 +63,9 @@ export default function SessionPage() {
     return () => clearInterval(restRef.current)
   }, [phase])
 
+  // Resetear lados al cambiar ejercicio o serie
+  useEffect(() => { setSidesDone(0) }, [exIdx, setIdx])
+
   const recordAndAdvance = useCallback((skipped) => {
     const completedSets = skipped ? setIdx : (currentEx?.sets ?? 0)
     setResults(r => [...r, {
@@ -70,17 +74,23 @@ export default function SessionPage() {
       plannedSets:   currentEx.sets,
       completedSets,
       skipped,
-      satisfaction:  0   // se asigna en el resumen final
+      satisfaction:  0
     }])
     setExRatings(r => [...r, 0])
     if (isLastEx) { setPhase(PHASE.DONE) }
     else          { setExIdx(i=>i+1); setSetIdx(0); setPhase(PHASE.EXERCISE) }
   }, [currentEx, setIdx, isLastEx])
 
-  const completeSet = useCallback(() => {
+  // Para ejercicios unilaterales: primer tap = lado 1, segundo tap = lado 2 → completa la serie
+  const handleMainBtn = useCallback(() => {
+    if (currentEx?.unilateral) {
+      if (sidesDone < 1) { setSidesDone(1); return }   // primer lado completado
+      // segundo lado → proceder igual que un ejercicio normal
+      setSidesDone(2)
+    }
     if (isLastSet) { recordAndAdvance(false) }
     else           { setSetIdx(i=>i+1); setPhase(PHASE.REST) }
-  }, [isLastSet, recordAndAdvance])
+  }, [currentEx, sidesDone, isLastSet, recordAndAdvance])
 
   const skipExercise = useCallback(() => {
     recordAndAdvance(true)
@@ -190,10 +200,35 @@ export default function SessionPage() {
             ))}
           </div>
           <div className="session-set-label">Serie <strong>{setIdx+1}</strong> de <strong>{currentEx.sets}</strong></div>
+
+          {/* Indicador de lados para ejercicios unilaterales */}
+          {currentEx.unilateral && phase !== PHASE.REST && (
+            <div className="sides-indicator">
+              <div className={`side-btn ${sidesDone >= 1 ? 'done' : 'active'}`}>
+                {sidesDone >= 1 ? <CheckSide /> : <BodyIcon />}
+                <span>Lado izquierdo</span>
+              </div>
+              <div className="sides-arrow">→</div>
+              <div className={`side-btn ${sidesDone >= 2 ? 'done' : sidesDone === 1 ? 'active' : 'pending'}`}>
+                {sidesDone >= 2 ? <CheckSide /> : <BodyIcon mirrored />}
+                <span>Lado derecho</span>
+              </div>
+            </div>
+          )}
+
           <div className="session-actions">
             <button className="btn btn-ghost" onClick={skipExercise}><SkipIcon /> Saltar ejercicio</button>
-            <button className="btn btn-primary session-main-btn" onClick={completeSet} disabled={phase===PHASE.REST}>
-              {phase===PHASE.REST?`Descansando ${restSecs}s`:isLastSet?'✓ Terminar ejercicio':'✓ Serie completada'}
+            <button className="btn btn-primary session-main-btn" onClick={handleMainBtn} disabled={phase===PHASE.REST}>
+              {phase === PHASE.REST
+                ? `Descansando ${restSecs}s`
+                : currentEx.unilateral && sidesDone === 0
+                  ? '✓ Lado izquierdo listo'
+                  : currentEx.unilateral && sidesDone === 1
+                    ? '✓ Lado derecho listo'
+                    : isLastSet
+                      ? '✓ Terminar ejercicio'
+                      : '✓ Serie completada'
+              }
             </button>
           </div>
         </div>
@@ -228,6 +263,15 @@ function StarRating({ value, onChange, size='md' }) {
   )
 }
 
-const CloseIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-const SkipIcon  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
-const CheckMark = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+const CloseIcon  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+const SkipIcon   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+const CheckMark  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+const CheckSide  = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+const BodyIcon   = ({ mirrored }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+    style={mirrored ? { transform:'scaleX(-1)' } : {}}>
+    <circle cx="12" cy="4" r="2"/>
+    <path d="M9 9h6l1 5h-2l-1 6h-2l-1-6H8z"/>
+    <path d="M9 14l-2 4M15 14l2 4"/>
+  </svg>
+)
