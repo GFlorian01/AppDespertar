@@ -81,12 +81,12 @@ textarea.form-input { resize: vertical; }
 .animate-in { animation: fadeIn .3s ease both; }
 
 /* ── Modal ── */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(4px); display: flex; align-items: flex-start; justify-content: center; z-index: 100; padding: 16px; overflow-y: auto; animation: fadeIn .2s ease; }
-.modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; width: 100%; max-width: 500px; margin: auto; animation: slideUp .25s ease; box-shadow: var(--shadow-lg); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(4px); display: flex; align-items: flex-start; justify-content: center; z-index: 100; padding: 20px 16px; overflow-y: auto; animation: fadeIn .2s ease; }
+.modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; width: 100%; max-width: 560px; margin: auto; animation: slideUp .25s ease; box-shadow: var(--shadow-lg); }
 .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 .modal-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 500; }
-.modal-wide { max-width: 680px !important; }
-.modal-xl   { max-width: 860px !important; }
+.modal-wide { max-width: 720px !important; }
+.modal-xl   { max-width: 900px !important; }
 
 /* ── Layout ── */
 .layout { display: flex; height: 100vh; overflow: hidden; }
@@ -198,12 +198,13 @@ textarea.form-input { resize: vertical; }
 .exercise-card-actions { display: flex; gap: 6px; margin-top: 4px; }
 .exercise-form { display: flex; flex-direction: column; gap: 20px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.video-upload-area { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 20px; border: 2px dashed var(--border); border-radius: var(--radius); cursor: pointer; transition: all .15s; min-height: 64px; }
+.video-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 28px 20px; border: 2px dashed var(--border); border-radius: var(--radius); cursor: pointer; transition: all .15s; min-height: 100px; text-align: center; }
 .video-upload-area:hover { border-color: var(--accent); background: var(--accent-dim2); }
-.upload-placeholder { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; }
+.upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; }
+.upload-placeholder svg { opacity: .6; }
 .upload-replace { display: flex; align-items: center; gap: 8px; color: var(--sage); font-size: 14px; font-weight: 500; }
 .upload-progress { width: 100%; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-muted); }
-.progress-bar { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width .2s; }
 
 /* ── VideoTrimmer ── */
@@ -493,17 +494,46 @@ textarea.form-input { resize: vertical; }
     background: rgba(0,0,0,.6);
   }
   .modal {
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    padding: 20px 16px 32px;
+    border-radius: 20px 20px 0 0;
+    padding: 22px 18px calc(env(safe-area-inset-bottom, 0px) + 28px);
     max-width: 100%;
     width: 100%;
-    max-height: 95vh;
+    max-height: 96dvh;
     overflow-y: auto;
+    overflow-x: hidden;
     margin: 0;
     animation: slideUp .3s ease;
   }
   .modal-wide, .modal-xl { max-width: 100% !important; }
-  .modal-title { font-size: 1.3rem; }
+  .modal-header { margin-bottom: 18px; }
+  .modal-title { font-size: 1.4rem; }
+
+  /* Form móvil: inputs más grandes, más fáciles de tocar */
+  .form-input { padding: 13px 14px; font-size: 15px; }
+  .form-label { font-size: 11px; margin-bottom: 2px; }
+  .exercise-form { gap: 18px; }
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+    padding-top: 14px;
+  }
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 15px 20px;
+    font-size: 15px;
+  }
+
+  /* Área de upload más grande y visible en móvil */
+  .video-upload-area {
+    min-height: 130px;
+    padding: 28px 20px;
+    border-radius: var(--radius);
+    gap: 12px;
+  }
+  .upload-placeholder { font-size: 15px; }
+  .upload-placeholder svg { width: 28px; height: 28px; opacity: .7; }
+  .upload-replace { font-size: 15px; }
 
   /* Grids */
   .home-stats { grid-template-columns: 1fr 1fr; }
@@ -531,4 +561,13 @@ textarea.form-input { resize: vertical; }
   /* Routine builder en móvil */
   .routine-builder { min-height: auto; }
   .ex-picker, .routine-order { max-height: 240px; }
+
+  /* VideoTrimmer en móvil: video más compacto para dejar espacio a los controles */
+  .vt-preview { max-height: 42vh; }
+  .vt-play-btn { width: 64px; height: 64px; }
+  .vt-rail-wrap { height: 72px; padding: 0 24px; }
+  .vt-handle-bar { width: 28px; height: 52px; border-radius: 8px; }
+  .vt-handle-label { font-size: 11px; padding: 3px 8px; }
+  .vt-info-val { font-size: 16px; }
+  .vt-hint { font-size: 12px; padding: 0 8px; }
 }
