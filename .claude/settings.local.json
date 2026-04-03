@@ -8,7 +8,10 @@
       "Bash(npm run:*)",
       "Bash(curl -s -L http://localhost:3000/login)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(pkill -f \"next dev\")"
+      "Bash(pkill -f \"next dev\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
