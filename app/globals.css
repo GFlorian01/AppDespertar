@@ -813,6 +813,21 @@ textarea.form-input { min-height: 100px; resize: none; }
   .vt-hint { font-size: 12px; padding: 0 8px; }
 }
 
+/* ── Shared exercise badges ───────────────────────────── */
+.ex-shared-badge {
+  position: absolute; bottom: 8px; left: 8px;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 99px;
+  font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  background: rgba(107,158,117,.85); color: #fff;
+  backdrop-filter: blur(4px);
+}
+.ex-shared-own {
+  background: rgba(224,125,69,.85);
+}
+.share-toggle .unilateral-box { border-color: var(--sage); }
+input:checked ~ .share-box { background: var(--sage) !important; border-color: var(--sage) !important; }
+
 /* ── Profile edit ─────────────────────────────────────── */
 
 /* Sidebar user button */
