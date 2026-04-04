@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useExercises } from '@/hooks/useExercises'
 import VideoTrimmer from '@/components/exercises/VideoTrimmer'
 
@@ -196,15 +196,50 @@ export default function EjerciciosPage() {
   )
 }
 
+function TrimmedVideo({ src, trimStart = 0, trimEnd = 0, className }) {
+  const ref = useRef(null)
+  const start = trimStart || 0
+  const end   = trimEnd   || 0
+
+  useEffect(() => {
+    const vid = ref.current
+    if (!vid) return
+    // Arrancar desde trimStart
+    vid.currentTime = start
+    vid.play().catch(() => {})
+
+    // Loop dentro del fragmento
+    const onTime = () => {
+      if (end > start && vid.currentTime >= end) vid.currentTime = start
+    }
+    vid.addEventListener('timeupdate', onTime)
+    return () => vid.removeEventListener('timeupdate', onTime)
+  }, [src, start, end])
+
+  return (
+    <video
+      ref={ref}
+      src={src}
+      className={className}
+      muted
+      playsInline
+      preload="metadata"
+    />
+  )
+}
+
 function ExCard({ exercise, onEdit, onDelete }) {
   const cat = CATEGORIES.find(c => c.value === exercise.category)
   const dur = (exercise.trimEnd || 0) - (exercise.trimStart || 0)
   return (
     <div className="exercise-card card animate-in">
       <div className="exercise-thumb">
-        <video src={exercise.videoUrl} className="thumb-video" muted loop playsInline
-          onMouseEnter={e => e.target.play()}
-          onMouseLeave={e => { e.target.pause(); e.target.currentTime = exercise.trimStart || 0 }} />
+        <TrimmedVideo
+          src={exercise.videoUrl}
+          trimStart={exercise.trimStart || 0}
+          trimEnd={exercise.trimEnd || exercise.videoDuration || 0}
+          className="thumb-video"
+        />
         <div className={`badge badge-${cat?.color || 'accent'} ex-badge`}>{cat?.label}</div>
         {dur > 0 && <div className="thumb-duration">{Math.round(dur)}s</div>}
       </div>
