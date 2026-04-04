@@ -18,6 +18,9 @@ const nunito = Nunito_Sans({
 export const metadata = {
   title: 'Despertar',
   description: 'Tu espacio de movimiento',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({ children }) {
