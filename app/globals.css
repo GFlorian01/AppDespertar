@@ -834,13 +834,15 @@ textarea.form-input { min-height: 100px; resize: none; }
   .ex-picker, .routine-order { max-height: 240px; }
 
   /* VideoTrimmer en móvil */
+  .ex-trimmer-wrap { flex: none; overflow: visible; height: auto; }
   .vt-root { height: auto; }
-  .vt-preview { flex: none; aspect-ratio: 9/16; max-height: 42vh; width: auto; margin: 0 auto; }
-  .vt-play-btn { width: 64px; height: 64px; }
-  .vt-rail-wrap { height: 72px; padding: 0 24px; }
+  .vt-preview { flex: none; aspect-ratio: 9/16; max-height: 38vh; width: auto; margin: 0 auto; }
+  .vt-play-btn { width: 56px; height: 56px; }
+  .vt-rail-wrap { height: 72px; padding: 0 16px; }
   .vt-handle-bar { width: 28px; height: 52px; border-radius: 8px; }
   .vt-handle-label { font-size: 11px; padding: 3px 8px; }
-  .vt-info-val { font-size: 16px; }
+  .vt-info-row { gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .vt-info-val { font-size: 14px; }
   .vt-hint { font-size: 12px; padding: 0 8px; }
 }
 
