@@ -48,7 +48,20 @@ export default function RutinasPage() {
       {loading ? (
         <div className="routine-list">{[1,2].map(i => <div key={i} className="skeleton-card" style={{ height: 140 }} />)}</div>
       ) : routines.length === 0 ? (
-        <div className="empty-state"><ListIcon size={48} /><p>No tienes rutinas. Crea una para empezar.</p></div>
+        <div className="empty-state">
+          <ListIcon size={48} />
+          {exercises.length === 0 ? (
+            <>
+              <p>Para crear una rutina primero necesitas ejercicios.</p>
+              <button className="btn btn-primary" onClick={() => router.push('/ejercicios')}><DumbbellIcon /> Ir a Ejercicios</button>
+            </>
+          ) : (
+            <>
+              <p>Aún no tienes rutinas. {exercises.length > 0 && `Tienes ${exercises.length} ejercicios listos para usar.`}</p>
+              <button className="btn btn-primary" onClick={openNew}><PlusIcon /> Crear primera rutina</button>
+            </>
+          )}
+        </div>
       ) : (
         <div className="routine-list">
           {routines.map(r => (
@@ -120,7 +133,7 @@ export default function RutinasPage() {
                 <div className="rpanel">
                   <p className="section-label">Ejercicios disponibles</p>
                   {availableEx.length === 0
-                    ? <p className="picker-empty">Todos los ejercicios ya están en la rutina</p>
+                    ? <p className="picker-empty">{exercises.length === 0 ? 'No hay ejercicios. Crea o explora algunos primero.' : 'Todos los ejercicios ya están en la rutina.'}</p>
                     : <div className="picker-list">
                         {availableEx.map(ex => (
                           <button key={ex.id} type="button" className="picker-item" onClick={() => addEx(ex)}>
@@ -190,5 +203,6 @@ const EditIcon    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="
 const TrashIcon   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
 const PlayIcon    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
 const ListIcon    = ({ size=24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-const ChevronUp   = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
-const ChevronDown = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+const ChevronUp    = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+const ChevronDown  = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+const DumbbellIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M4 8.5v7M20 8.5v7M2 10.5v3M22 10.5v3"/></svg>

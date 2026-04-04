@@ -70,6 +70,33 @@ textarea.form-input { resize: vertical; }
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 20px; text-align: center; }
 .empty-state svg { opacity: .3; }
 .empty-state p { font-size: 15px; color: var(--text-muted); }
+.empty-hint { font-size: 13px !important; color: var(--text-dim) !important; }
+.link-btn { background: none; border: none; color: var(--accent); cursor: pointer; font: inherit; text-decoration: underline; padding: 0; }
+.link-btn:hover { color: var(--accent-hover); }
+
+/* ── Onboarding steps ── */
+.onboard-steps { display: flex; flex-direction: column; gap: 10px; }
+.onboard-step {
+  display: flex; align-items: center; gap: 16px;
+  padding: 18px 20px; cursor: pointer; border: none;
+  text-align: left; color: var(--text); font: inherit;
+  transition: background .15s, border-color .15s;
+}
+.onboard-step:hover { background: var(--bg-elevated); border-color: var(--border-light); }
+.onboard-step-locked { cursor: default; opacity: .55; }
+.onboard-step-locked:hover { background: var(--bg-card); border-color: var(--border); }
+.onboard-num {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+  background: var(--accent-dim); color: var(--accent);
+}
+.onboard-step-locked .onboard-num { background: var(--sage-dim); color: var(--sage); }
+.onboard-info { flex: 1; min-width: 0; }
+.onboard-step-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.onboard-step-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.onboard-arrow { color: var(--text-dim); font-size: 18px; flex-shrink: 0; }
+.onboard-check { color: var(--sage); }
 
 /* ── Skeleton ── */
 .skeleton-card { background: var(--bg-card); border-radius: var(--radius-lg); animation: pulse 1.5s ease infinite; }

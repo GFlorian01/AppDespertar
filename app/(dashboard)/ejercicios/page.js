@@ -106,7 +106,24 @@ export default function EjerciciosPage() {
       {loading ? (
         <div className="loading-grid">{[1,2,3].map(i => <div key={i} className="skeleton-card" style={{ height: 280 }} />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="empty-state"><VideoIcon size={48} /><p>No hay ejercicios aquí todavía.</p></div>
+        <div className="empty-state">
+          <VideoIcon size={48} />
+          {origin === 'mine' ? (
+            <>
+              <p>Aún no tienes ejercicios propios.</p>
+              <p className="empty-hint">Puedes crear los tuyos o usar los de la <button className="link-btn" onClick={() => setOrigin('shared')}>biblioteca compartida</button>.</p>
+            </>
+          ) : origin === 'shared' ? (
+            <p>No hay ejercicios compartidos disponibles todavía.</p>
+          ) : exercises.length === 0 ? (
+            <>
+              <p>No hay ejercicios todavía.</p>
+              <button className="btn btn-primary" onClick={openNew}><PlusIcon /> Crear tu primer ejercicio</button>
+            </>
+          ) : (
+            <p>No hay ejercicios en esta categoría.</p>
+          )}
+        </div>
       ) : (
         <div className="exercise-grid">
           {filtered.map(ex => (
