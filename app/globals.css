@@ -464,23 +464,21 @@ textarea.form-input { min-height: 100px; resize: none; }
   display: block;
 }
 
-.vt-overlay {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-}
-
-.vt-play-btn {
-  width: 56px; height: 56px;
-  background: rgba(0,0,0,.55);
-  border: 2px solid rgba(255,255,255,.3);
+/* Play/pause — small corner button, doesn't block video view */
+.vt-play-corner {
+  position: absolute; bottom: 10px; left: 10px;
+  width: 32px; height: 32px;
+  background: rgba(0,0,0,.6);
+  border: 1.5px solid rgba(255,255,255,.25);
   border-radius: 50%;
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   backdrop-filter: blur(4px);
   transition: background .15s, transform .1s;
+  z-index: 2;
 }
-.vt-play-btn:hover { background: rgba(0,0,0,.75); transform: scale(1.05); }
+.vt-play-corner:hover { background: rgba(0,0,0,.8); transform: scale(1.08); }
 
 .vt-time-chip {
   position: absolute; bottom: 10px; right: 10px;
@@ -900,7 +898,7 @@ textarea.form-input { min-height: 100px; resize: none; }
   .ex-trimmer-wrap { flex: none; overflow: visible; height: auto; }
   .vt-root { height: auto; }
   .vt-preview { flex: none; aspect-ratio: 9/16; max-height: 38vh; width: auto; margin: 0 auto; }
-  .vt-play-btn { width: 56px; height: 56px; }
+  .vt-play-corner { width: 28px; height: 28px; }
   .vt-rail-wrap { height: 72px; padding: 0 16px; }
   .vt-handle-bar { width: 28px; height: 52px; border-radius: 8px; }
   .vt-handle-label { font-size: 11px; padding: 3px 8px; }
