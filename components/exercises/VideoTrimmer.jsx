@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect, useCallback } from 'react'
+import { detectScenes } from '@/lib/sceneDetect'
 
 export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, onChange }) {
   const videoRef  = useRef(null)
@@ -8,6 +9,11 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
   const [currentTime, setCurrentTime] = useState(trimStart || 0)
   const [dragging,    setDragging]    = useState(null)
   const [playing,     setPlaying]     = useState(true)
+
+  // Scene detection state
+  const [scenes,         setScenes]         = useState(null)
+  const [detecting,      setDetecting]      = useState(false)
+  const [detectProgress, setDetectProgress] = useState(0)
 
   const start = trimStart ?? 0
   const end   = trimEnd   ?? duration ?? 0
@@ -81,6 +87,36 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
     else            { vid.pause(); setPlaying(false) }
   }
 
+  // ── Scene detection ──
+  const handleDetect = async () => {
+    setDetecting(true)
+    setDetectProgress(0)
+    try {
+      const result = await detectScenes(videoUrl, {
+        onProgress: setDetectProgress,
+      })
+      setScenes(result)
+      // Auto-select first scene
+      if (result.length > 0) {
+        onChange({ trimStart: result[0].start, trimEnd: result[0].end })
+        setCurrentTime(result[0].start)
+        const vid = videoRef.current
+        if (vid) vid.currentTime = result[0].start
+      }
+    } catch (err) {
+      console.error('Scene detection failed:', err)
+    } finally {
+      setDetecting(false)
+    }
+  }
+
+  const selectScene = (scene) => {
+    onChange({ trimStart: scene.start, trimEnd: scene.end })
+    setCurrentTime(scene.start)
+    const vid = videoRef.current
+    if (vid) { vid.currentTime = scene.start; vid.play(); setPlaying(true) }
+  }
+
   const fmt = (t) => `${Math.floor(t / 60)}:${Math.floor(t % 60).toString().padStart(2, '0')}`
 
   const startPct   = toPercent(start)
@@ -96,6 +132,7 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
           ref={videoRef}
           src={videoUrl}
           className="vt-video"
+          crossOrigin="anonymous"
           autoPlay muted playsInline
         />
 
@@ -110,6 +147,52 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
         {/* Start / End labels on video */}
         <div className="vt-marker-label vt-marker-start">▶ {fmt(start)}</div>
         <div className="vt-marker-label vt-marker-end">{fmt(end)} ◀</div>
+      </div>
+
+      {/* ── Scene detection ── */}
+      <div className="vt-auto-section">
+        {!scenes && !detecting && (
+          <button type="button" className="vt-detect-btn" onClick={handleDetect}>
+            <WandIcon /> Detectar cortes automáticamente
+          </button>
+        )}
+
+        {detecting && (
+          <div className="vt-detecting">
+            <span className="vt-detect-status">Analizando video... {detectProgress}%</span>
+            <div className="progress-bar" style={{ height: 4 }}>
+              <div className="progress-fill" style={{ width: `${detectProgress}%` }} />
+            </div>
+          </div>
+        )}
+
+        {scenes && scenes.length > 0 && (
+          <div className="vt-scenes">
+            <div className="vt-scenes-header">
+              <span className="vt-scenes-label">{scenes.length} escena{scenes.length > 1 ? 's' : ''} detectada{scenes.length > 1 ? 's' : ''}</span>
+              <button type="button" className="vt-scenes-reset" onClick={() => setScenes(null)}>
+                Ocultar
+              </button>
+            </div>
+            <div className="vt-scenes-list">
+              {scenes.map((scene, i) => {
+                const isActive = Math.abs(scene.start - start) < 0.1 && Math.abs(scene.end - end) < 0.1
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`vt-scene-chip ${isActive ? 'active' : ''}`}
+                    onClick={() => selectScene(scene)}
+                  >
+                    <span className="vt-scene-num">{i + 1}</span>
+                    <span className="vt-scene-time">{fmt(scene.start)} – {fmt(scene.end)}</span>
+                    <span className="vt-scene-dur">{Math.round(scene.end - scene.start)}s</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Info row ── */}
@@ -133,6 +216,15 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
         {/* Track */}
         <div className="vt-track-bg" />
         <div className="vt-track-sel" style={{ left: `${startPct}%`, width: `${endPct - startPct}%` }} />
+
+        {/* Scene markers on rail */}
+        {scenes && scenes.map((scene, i) => (
+          <div
+            key={i}
+            className="vt-scene-marker"
+            style={{ left: `${toPercent(scene.start)}%` }}
+          />
+        ))}
 
         {/* Playhead */}
         <div className="vt-playhead" style={{ left: `${currentPct}%` }} />
@@ -160,10 +252,11 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
         </div>
       </div>
 
-      <p className="vt-hint">Arrastra los marcadores naranjas para recortar el fragmento</p>
+      <p className="vt-hint">Arrastra los marcadores naranjas para ajustar el recorte</p>
     </div>
   )
 }
 
 const PlayIcon  = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
 const PauseIcon = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+const WandIcon  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8L19 13"/><path d="M15 9h0"/><path d="M17.8 6.2L19 5"/><path d="M3 21l9-9"/><path d="M12.2 6.2L11 5"/></svg>
