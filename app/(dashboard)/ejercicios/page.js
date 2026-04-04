@@ -288,7 +288,7 @@ function ExCard({ exercise, isOwn, onEdit, onDelete }) {
         {dur > 0 && <div className="thumb-duration">{Math.round(dur)}s</div>}
         {exercise.isPublic && (
           <div className={`ex-shared-badge ${isOwn ? 'ex-shared-own' : ''}`}>
-            <ShareIcon /> {isOwn ? 'Público' : 'Compartido'}
+            <ShareIcon /> {isOwn ? 'Compartido por ti' : 'Biblioteca'}
           </div>
         )}
       </div>
