@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRoutines } from '@/hooks/useRoutines'
@@ -58,9 +59,7 @@ export default function HomePage() {
                 <div className="hrc-thumbs">
                   {r.exercises?.slice(0, 2).map((ex, i) => (
                     <div key={i} className="hrc-thumb">
-                      <video src={ex.videoUrl} muted playsInline className="hrc-video"
-                        onMouseEnter={e => e.target.play()}
-                        onMouseLeave={e => { e.target.pause(); e.target.currentTime = ex.trimStart || 0 }} />
+                      <TrimmedThumb src={ex.videoUrl} trimStart={ex.trimStart || 0} trimEnd={ex.trimEnd || 0} className="hrc-video" />
                     </div>
                   ))}
                 </div>
@@ -97,6 +96,19 @@ export default function HomePage() {
       )}
     </div>
   )
+}
+
+function TrimmedThumb({ src, trimStart = 0, trimEnd = 0, className }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    const vid = ref.current; if (!vid) return
+    vid.currentTime = trimStart
+    vid.play().catch(() => {})
+    const onTime = () => { if (trimEnd > trimStart && vid.currentTime >= trimEnd) vid.currentTime = trimStart }
+    vid.addEventListener('timeupdate', onTime)
+    return () => vid.removeEventListener('timeupdate', onTime)
+  }, [src, trimStart, trimEnd])
+  return <video ref={ref} src={src} className={className} muted playsInline preload="metadata" />
 }
 
 function Stars({ value }) {
