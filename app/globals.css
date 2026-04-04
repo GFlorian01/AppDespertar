@@ -784,11 +784,15 @@ textarea.form-input { min-height: 100px; resize: none; }
     width: 100%; justify-content: center; padding: 15px 20px; font-size: 15px;
   }
   .fullpanel-right { overflow-y: visible; }
-  .ex-form-fields { padding: 20px 18px; border-right: none; border-bottom: 1px solid var(--border); overflow-y: visible; }
+
+  /* Ejercicio form en móvil: video primero, campos después */
+  .ex-form-fields { padding: 18px 18px; border-right: none; border-bottom: none; overflow-y: visible; gap: 14px; order: 2; }
+  .ex-form-fields .form-row { flex-direction: column; gap: 12px; }
+  .ex-form-fields textarea { rows: 2; }
   .ex-form-actions { flex-direction: column-reverse; gap: 10px; }
   .ex-form-actions .btn { width: 100%; justify-content: center; padding: 15px 20px; font-size: 15px; }
-  .ex-form-video { padding: 20px 18px; background: var(--bg-card); overflow-y: visible; height: auto; }
-  .ex-upload-full { min-height: 160px; padding: 32px 20px; }
+  .ex-form-video { padding: 18px 18px; background: var(--bg-card); overflow-y: visible; height: auto; order: 1; border-bottom: 1px solid var(--border); min-height: 200px; }
+  .ex-upload-full { min-height: 180px; padding: 32px 20px; }
   .ex-upload-full .upload-placeholder svg { width: 36px; height: 36px; }
   .routine-builder-full { grid-template-columns: 1fr; }
   .rpanel:first-child { border-right: none; border-bottom: 1px solid var(--border); }
