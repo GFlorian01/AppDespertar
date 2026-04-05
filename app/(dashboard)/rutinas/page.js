@@ -103,11 +103,29 @@ export default function RutinasPage() {
             <h2 className="modal-title">{editing ? 'Editar rutina' : 'Nueva rutina'}</h2>
             <button className="btn-icon" onClick={closeForm}><CloseIcon /></button>
           </div>
+          {/* Mobile compact: name + save in header area */}
+          <div className="rt-mobile-bar">
+            <input
+              className="rt-mobile-name"
+              value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="Nombre de la rutina"
+              required
+            />
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              disabled={saving || form.exercises.length === 0 || !form.name.trim()}
+              onClick={handleSubmit}
+            >
+              {saving ? '...' : editing ? 'Guardar' : 'Crear'}
+            </button>
+          </div>
 
           <form onSubmit={handleSubmit} className="fullpanel-body">
 
             {/* ── Panel izquierdo: campos y acciones ── */}
-            <div className="fullpanel-left">
+            <div className="fullpanel-left rt-form-fields">
               <div className="form-group">
                 <label className="form-label">Nombre de la rutina</label>
                 <input className="form-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Rutina mañanera de caderas" required />
