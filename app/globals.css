@@ -833,11 +833,12 @@ textarea.form-input { min-height: 100px; resize: none; }
     overflow-y: auto;
     overflow-x: hidden;
   }
+  /* Rutina form en móvil: builder primero, campos después */
   .fullpanel-left {
-    padding: 20px 18px;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
+    padding: 16px 18px; gap: 14px;
+    border-right: none; border-bottom: none;
     overflow-y: visible;
+    order: 2;
   }
   .fullpanel-left-actions {
     flex-direction: column-reverse; gap: 10px; padding-top: 14px;
@@ -845,7 +846,7 @@ textarea.form-input { min-height: 100px; resize: none; }
   .fullpanel-left-actions .btn {
     width: 100%; justify-content: center; padding: 15px 20px; font-size: 15px;
   }
-  .fullpanel-right { overflow-y: visible; }
+  .fullpanel-right { overflow-y: visible; order: 1; }
 
   /* Ejercicio form en móvil: video primero, campos después */
   .ex-form-fields { padding: 18px 18px; border-right: none; border-bottom: none; overflow-y: visible; gap: 14px; order: 2; }
