@@ -3,12 +3,14 @@
 import { useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/contexts/LangContext'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useExercises } from '@/hooks/useExercises'
 import { useSessions } from '@/hooks/useSessions'
 
 export default function HomePage() {
   const { user } = useAuth()
+  const { t, lang } = useLang()
   const { routines } = useRoutines()
   const { exercises } = useExercises()
   const { sessions } = useSessions()
@@ -20,10 +22,12 @@ export default function HomePage() {
   const avgSat      = sessions.filter(s => s.overallSatisfaction > 0)
     .reduce((a, s, _, arr) => a + s.overallSatisfaction / arr.length, 0)
 
+  const locale = lang === 'en' ? 'en' : 'es'
   const fmt = (s) => { const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); return h > 0 ? `${h}h ${m}m` : `${m}m` }
-  const fmtDate = (ts) => { if (!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' }) }
+  const fmtDate = (ts) => { if (!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' }) }
+
   const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
+  const greeting = hour < 12 ? t('greeting.morning') : hour < 19 ? t('greeting.afternoon') : t('greeting.evening')
 
   const isNewUser = routines.length === 0 && sessions.length === 0
   const hasSharedExercises = exercises.some(e => e.userId !== user?.uid && e.isPublic)
@@ -33,33 +37,29 @@ export default function HomePage() {
       <div className="home-greeting">
         <h1 className="home-title">{greeting},<br /><span className="home-name">{firstName}.</span></h1>
         {lastSession
-          ? <p className="home-subtitle">Última sesión: <strong>{lastSession.routineName}</strong> · {fmtDate(lastSession.startTime)}</p>
-          : <p className="home-subtitle">¿Listo para despertar tu cuerpo hoy?</p>
+          ? <p className="home-subtitle">{t('greeting.lastSession')}: <strong>{lastSession.routineName}</strong> · {fmtDate(lastSession.startTime)}</p>
+          : <p className="home-subtitle">{t('greeting.subtitle')}</p>
         }
       </div>
 
       {sessions.length > 0 && (
         <div className="home-stats">
-          <div className="home-stat card"><span className="hs-value">{sessions.length}</span><span className="hs-label">Sesiones totales</span></div>
-          <div className="home-stat card"><span className="hs-value">{fmt(totalTime)}</span><span className="hs-label">Tiempo entrenado</span></div>
-          <div className="home-stat card"><span className="hs-value">{avgSat > 0 ? avgSat.toFixed(1) + ' ★' : '—'}</span><span className="hs-label">Satisfacción promedio</span></div>
+          <div className="home-stat card"><span className="hs-value">{sessions.length}</span><span className="hs-label">{t('home.stats.sessions')}</span></div>
+          <div className="home-stat card"><span className="hs-value">{fmt(totalTime)}</span><span className="hs-label">{t('home.stats.time')}</span></div>
+          <div className="home-stat card"><span className="hs-value">{avgSat > 0 ? avgSat.toFixed(1) + ' ★' : '—'}</span><span className="hs-label">{t('home.stats.satisfaction')}</span></div>
         </div>
       )}
 
-      {/* Onboarding steps for new users */}
       {isNewUser && (
         <div className="home-section">
-          <h2 className="home-section-title">Comienza en 3 pasos</h2>
+          <h2 className="home-section-title">{t('onboard.title')}</h2>
           <div className="onboard-steps">
             <button className="onboard-step card" onClick={() => router.push('/ejercicios')}>
               <span className="onboard-num">1</span>
               <div className="onboard-info">
-                <h3 className="onboard-step-title">Explora ejercicios</h3>
+                <h3 className="onboard-step-title">{t('onboard.step1.title')}</h3>
                 <p className="onboard-step-desc">
-                  {hasSharedExercises
-                    ? 'Ya hay ejercicios en la biblioteca compartida listos para usar. También puedes crear los tuyos.'
-                    : 'Sube videos de tus ejercicios y recórtalos para mantener solo lo importante.'
-                  }
+                  {hasSharedExercises ? t('onboard.step1.desc.shared') : t('onboard.step1.desc.empty')}
                 </p>
               </div>
               <span className="onboard-arrow">→</span>
@@ -67,16 +67,16 @@ export default function HomePage() {
             <button className="onboard-step card" onClick={() => router.push('/rutinas')}>
               <span className="onboard-num">2</span>
               <div className="onboard-info">
-                <h3 className="onboard-step-title">Arma tu rutina</h3>
-                <p className="onboard-step-desc">Combina ejercicios, define series, repeticiones y descanso.</p>
+                <h3 className="onboard-step-title">{t('onboard.step2.title')}</h3>
+                <p className="onboard-step-desc">{t('onboard.step2.desc')}</p>
               </div>
               <span className="onboard-arrow">→</span>
             </button>
             <div className="onboard-step card onboard-step-locked">
               <span className="onboard-num">3</span>
               <div className="onboard-info">
-                <h3 className="onboard-step-title">Entrena</h3>
-                <p className="onboard-step-desc">Inicia una sesión guiada con video. Registra tu progreso al final.</p>
+                <h3 className="onboard-step-title">{t('onboard.step3.title')}</h3>
+                <p className="onboard-step-desc">{t('onboard.step3.desc')}</p>
               </div>
               <span className="onboard-arrow onboard-check">✓</span>
             </div>
@@ -85,14 +85,14 @@ export default function HomePage() {
       )}
 
       <div className="home-section">
-        <h2 className="home-section-title">Tus rutinas</h2>
+        <h2 className="home-section-title">{t('home.routines')}</h2>
         {routines.length === 0 ? (
           <div className="home-empty card">
             {isNewUser
-              ? <p>Sigue los pasos de arriba para crear tu primera rutina.</p>
+              ? <p>{t('onboard.noRoutines')}</p>
               : <>
-                  <p>Aún no tienes rutinas.</p>
-                  <button className="btn btn-primary" onClick={() => router.push('/rutinas')}>Crear primera rutina</button>
+                  <p>{t('home.noRoutines')}</p>
+                  <button className="btn btn-primary" onClick={() => router.push('/rutinas')}>{t('home.createFirst')}</button>
                 </>
             }
           </div>
@@ -102,7 +102,7 @@ export default function HomePage() {
               <div key={r.id} className="home-routine-card card">
                 <div className="hrc-info">
                   <h3 className="hrc-name">{r.name}</h3>
-                  <p className="hrc-meta">{r.exercises?.length || 0} ejercicios · {r.exercises?.reduce((a, e) => a + e.sets, 0) || 0} series</p>
+                  <p className="hrc-meta">{r.exercises?.length || 0} {t('home.exercises.label')} · {r.exercises?.reduce((a, e) => a + e.sets, 0) || 0} {t('home.sets.label')}</p>
                 </div>
                 <div className="hrc-thumbs">
                   {r.exercises?.slice(0, 2).map((ex, i) => (
@@ -112,7 +112,7 @@ export default function HomePage() {
                   ))}
                 </div>
                 <button className="btn btn-primary" onClick={() => router.push(`/sesion/${r.id}`)}>
-                  <PlayIcon /> Iniciar
+                  <PlayIcon /> {t('home.start')}
                 </button>
               </div>
             ))}
@@ -123,8 +123,8 @@ export default function HomePage() {
       {sessions.length > 0 && (
         <div className="home-section">
           <div className="home-section-header">
-            <h2 className="home-section-title">Sesiones recientes</h2>
-            <button className="btn btn-ghost btn-sm" onClick={() => router.push('/historial')}>Ver todo →</button>
+            <h2 className="home-section-title">{t('home.recent')}</h2>
+            <button className="btn btn-ghost btn-sm" onClick={() => router.push('/historial')}>{t('home.seeAll')}</button>
           </div>
           <div className="home-recent">
             {sessions.slice(0, 3).map(s => (

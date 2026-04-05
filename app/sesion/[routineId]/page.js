@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useSessions } from '@/hooks/useSessions'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/contexts/LangContext'
 
 const PHASE = { EXERCISE: 'exercise', REST: 'rest', DONE: 'done' }
 
@@ -13,6 +14,7 @@ export default function SessionPage() {
   const { routines } = useRoutines()
   const { saveSession } = useSessions()
   const { user, loading: authLoading } = useAuth()
+  const { t } = useLang()
   const router = useRouter()
 
   const routine = routines.find(r => r.id === routineId)
@@ -23,10 +25,10 @@ export default function SessionPage() {
   const [restSecs,    setRestSecs]    = useState(0)
   const [elapsed,     setElapsed]     = useState(0)
   const [results,     setResults]     = useState([])
-  const [exRatings,   setExRatings]   = useState([])   // ratings por ejercicio, se llenan al final
+  const [exRatings,   setExRatings]   = useState([])
   const [finalRating, setFinalRating] = useState(0)
   const [saving,      setSaving]      = useState(false)
-  const [sidesDone,   setSidesDone]   = useState(0)    // 0=ninguno, 1=un lado, 2=ambos lados (unilateral)
+  const [sidesDone,   setSidesDone]   = useState(0)
 
   const videoRef     = useRef(null)
   const sessionStart = useRef(Date.now())
@@ -37,9 +39,9 @@ export default function SessionPage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
-    if (phase === PHASE.DONE) return   // detener el contador al terminar
-    const t = setInterval(() => setElapsed(Math.floor((Date.now() - sessionStart.current) / 1000)), 1000)
-    return () => clearInterval(t)
+    if (phase === PHASE.DONE) return
+    const ti = setInterval(() => setElapsed(Math.floor((Date.now() - sessionStart.current) / 1000)), 1000)
+    return () => clearInterval(ti)
   }, [phase])
 
   const currentEx = routine?.exercises[exIdx]
@@ -64,42 +66,36 @@ export default function SessionPage() {
     return () => clearInterval(restRef.current)
   }, [phase])
 
-  // Resetear lados al cambiar ejercicio o serie
   useEffect(() => { setSidesDone(0) }, [exIdx, setIdx])
 
   const recordAndAdvance = useCallback((skipped) => {
     const completedSets = skipped ? setIdx : (currentEx?.sets ?? 0)
     setResults(r => [...r, {
-      exerciseId:    currentEx.exerciseId,
-      exerciseName:  currentEx.exerciseName,
-      plannedSets:   currentEx.sets,
+      exerciseId:   currentEx.exerciseId,
+      exerciseName: currentEx.exerciseName,
+      plannedSets:  currentEx.sets,
       completedSets,
       skipped,
-      satisfaction:  0
+      satisfaction: 0,
     }])
     setExRatings(r => [...r, 0])
     if (isLastEx) { setPhase(PHASE.DONE) }
     else          { setExIdx(i=>i+1); setSetIdx(0); setPhase(PHASE.EXERCISE) }
   }, [currentEx, setIdx, isLastEx])
 
-  // Para ejercicios unilaterales: primer tap = lado 1, segundo tap = lado 2 → completa la serie
   const handleMainBtn = useCallback(() => {
     if (currentEx?.unilateral) {
-      if (sidesDone < 1) { setSidesDone(1); return }   // primer lado completado
-      // segundo lado → proceder igual que un ejercicio normal
+      if (sidesDone < 1) { setSidesDone(1); return }
       setSidesDone(2)
     }
     if (isLastSet) { recordAndAdvance(false) }
     else           { setSetIdx(i=>i+1); setPhase(PHASE.REST) }
   }, [currentEx, sidesDone, isLastSet, recordAndAdvance])
 
-  const skipExercise = useCallback(() => {
-    recordAndAdvance(true)
-  }, [recordAndAdvance])
+  const skipExercise = useCallback(() => { recordAndAdvance(true) }, [recordAndAdvance])
 
   const handleSave = async () => {
     setSaving(true)
-    // Combinar ratings del resumen final en los resultados
     const finalResults = results.map((r, i) => ({ ...r, satisfaction: exRatings[i] || 0 }))
     try {
       await saveSession({ routineId, routineName: routine.name, totalDuration: elapsed, overallSatisfaction: finalRating, exercises: finalResults, endTime: new Date().toISOString() })
@@ -118,25 +114,24 @@ export default function SessionPage() {
       <div className="session-done animate-in">
         <div className="done-card card">
           <div className="done-icon">🌅</div>
-          <h1 className="done-title">¡Sesión completada!</h1>
+          <h1 className="done-title">{t('session.done.title')}</h1>
           <p className="done-subtitle">{routine.name}</p>
 
           <div className="done-stats">
-            <div className="done-stat"><span className="stat-value">{fmt(elapsed)}</span><span className="stat-label">Tiempo total</span></div>
-            <div className="done-stat"><span className="stat-value">{completed}</span><span className="stat-label">Completados</span></div>
-            <div className="done-stat"><span className="stat-value">{skipped}</span><span className="stat-label">Saltados</span></div>
+            <div className="done-stat"><span className="stat-value">{fmt(elapsed)}</span><span className="stat-label">{t('session.done.time')}</span></div>
+            <div className="done-stat"><span className="stat-value">{completed}</span><span className="stat-label">{t('session.done.completed')}</span></div>
+            <div className="done-stat"><span className="stat-value">{skipped}</span><span className="stat-label">{t('session.done.skipped')}</span></div>
           </div>
 
-          {/* ── Calificación por ejercicio ── */}
           <div className="done-ex-ratings">
-            <p className="done-section-title">¿Cómo estuvo cada ejercicio?</p>
+            <p className="done-section-title">{t('session.done.howWas')}</p>
             {results.map((r, i) => (
               <div key={i} className={`done-ex-row ${r.skipped ? 'done-ex-skipped' : ''}`}>
                 <div className="done-ex-info">
                   <span className="done-ex-name">{r.exerciseName}</span>
                   {r.skipped
-                    ? <span className="done-ex-skip-badge">Saltado</span>
-                    : <span className="done-ex-sets">{r.completedSets}/{r.plannedSets} series</span>
+                    ? <span className="done-ex-skip-badge">{t('session.skipped')}</span>
+                    : <span className="done-ex-sets">{r.completedSets}/{r.plannedSets} {t('rtform.sets').toLowerCase()}</span>
                   }
                 </div>
                 {!r.skipped && (
@@ -150,16 +145,15 @@ export default function SessionPage() {
             ))}
           </div>
 
-          {/* ── Calificación general ── */}
           <div className="done-rating-section">
-            <p className="done-rating-label">¿Cómo te sentiste con la rutina completa?</p>
+            <p className="done-rating-label">{t('session.done.overall')}</p>
             <StarRating value={finalRating} onChange={setFinalRating} size="lg" />
           </div>
 
           <div className="done-actions">
-            <button className="btn btn-ghost" onClick={()=>router.push('/rutinas')}>Volver</button>
+            <button className="btn btn-ghost" onClick={()=>router.push('/rutinas')}>{t('rtform.cancel')}</button>
             <button className="btn btn-primary" onClick={handleSave} disabled={saving||finalRating===0}>
-              {saving?'Guardando...':'Guardar sesión'}
+              {saving ? t('session.done.saving') : t('session.done.save')}
             </button>
           </div>
         </div>
@@ -170,10 +164,20 @@ export default function SessionPage() {
   const totalSets = routine.exercises.reduce((a,e)=>a+e.sets,0)
   const progress  = ((exIdx * currentEx.sets + setIdx) / totalSets) * 100
 
+  const mainBtnLabel = phase === PHASE.REST
+    ? `${t('session.rest')} ${restSecs}s`
+    : currentEx.unilateral && sidesDone === 0
+      ? t('session.leftDone')
+      : currentEx.unilateral && sidesDone === 1
+        ? t('session.rightDone')
+        : isLastSet
+          ? t('session.finishEx')
+          : t('session.setDone')
+
   return (
     <div className="session-page">
       <div className="session-topbar">
-        <button className="btn btn-ghost btn-sm" onClick={()=>{ if(confirm('¿Salir de la sesión?')) router.push('/rutinas') }}><CloseIcon /> Salir</button>
+        <button className="btn btn-ghost btn-sm" onClick={()=>{ if(confirm('¿Salir de la sesión?')) router.push('/rutinas') }}><CloseIcon /></button>
         <div className="session-timer">{fmt(elapsed)}</div>
         <div className="session-progress-text">{exIdx+1} / {routine.exercises.length}</div>
       </div>
@@ -185,51 +189,41 @@ export default function SessionPage() {
           {phase === PHASE.REST && (
             <div className="rest-overlay">
               <div className="rest-countdown">{restSecs}</div>
-              <p className="rest-label">Descansando…</p>
-              <button className="btn btn-sage btn-sm" onClick={()=>{ clearInterval(restRef.current); setPhase(PHASE.EXERCISE) }}>Saltar descanso</button>
+              <p className="rest-label">{t('session.rest')}…</p>
+              <button className="btn btn-sage btn-sm" onClick={()=>{ clearInterval(restRef.current); setPhase(PHASE.EXERCISE) }}>{t('session.skip')}</button>
             </div>
           )}
         </div>
         <div className="session-controls">
           <div className="session-ex-info">
             <h2 className="session-ex-name">{currentEx.exerciseName}</h2>
-            <p className="session-ex-meta">{currentEx.reps} repeticiones · {currentEx.sets} series</p>
+            <p className="session-ex-meta">{currentEx.reps} reps · {currentEx.sets} {t('rtform.sets').toLowerCase()}</p>
           </div>
           <div className="session-set-indicator">
             {Array.from({length:currentEx.sets}).map((_,i)=>(
               <div key={i} className={`set-dot ${i<setIdx?'done':i===setIdx?'current':''}`} />
             ))}
           </div>
-          <div className="session-set-label">Serie <strong>{setIdx+1}</strong> de <strong>{currentEx.sets}</strong></div>
+          <div className="session-set-label">{t('rtform.sets')} <strong>{setIdx+1}</strong> / <strong>{currentEx.sets}</strong></div>
 
-          {/* Indicador de lados para ejercicios unilaterales */}
           {currentEx.unilateral && phase !== PHASE.REST && (
             <div className="sides-indicator">
               <div className={`side-btn ${sidesDone >= 1 ? 'done' : 'active'}`}>
                 {sidesDone >= 1 ? <CheckSide /> : <BodyIcon />}
-                <span>Lado izquierdo</span>
+                <span>{t('session.left')}</span>
               </div>
               <div className="sides-arrow">→</div>
               <div className={`side-btn ${sidesDone >= 2 ? 'done' : sidesDone === 1 ? 'active' : 'pending'}`}>
                 {sidesDone >= 2 ? <CheckSide /> : <BodyIcon mirrored />}
-                <span>Lado derecho</span>
+                <span>{t('session.right')}</span>
               </div>
             </div>
           )}
 
           <div className="session-actions">
-            <button className="btn btn-ghost" onClick={skipExercise}><SkipIcon /> Saltar ejercicio</button>
+            <button className="btn btn-ghost" onClick={skipExercise}><SkipIcon /> {t('session.skip')}</button>
             <button className="btn btn-primary session-main-btn" onClick={handleMainBtn} disabled={phase===PHASE.REST}>
-              {phase === PHASE.REST
-                ? `Descansando ${restSecs}s`
-                : currentEx.unilateral && sidesDone === 0
-                  ? '✓ Lado izquierdo listo'
-                  : currentEx.unilateral && sidesDone === 1
-                    ? '✓ Lado derecho listo'
-                    : isLastSet
-                      ? '✓ Terminar ejercicio'
-                      : '✓ Serie completada'
-              }
+              {mainBtnLabel}
             </button>
           </div>
         </div>

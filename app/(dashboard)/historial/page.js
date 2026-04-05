@@ -2,14 +2,17 @@
 
 import { useState } from 'react'
 import { useSessions } from '@/hooks/useSessions'
+import { useLang } from '@/contexts/LangContext'
 
 export default function HistorialPage() {
   const { sessions, loading } = useSessions()
+  const { t, lang } = useLang()
   const [selected, setSelected] = useState(null)
 
+  const locale = lang === 'en' ? 'en' : 'es'
   const fmt = (s) => { if (!s) return '—'; const m = Math.floor(s/60).toString().padStart(2,'0'); const sec = (s%60).toString().padStart(2,'0'); return `${m}:${sec}` }
-  const fmtDate = (ts) => { if (!ts) return '—'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) }
-  const fmtTime = (ts) => { if (!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }) }
+  const fmtDate = (ts) => { if (!ts) return '—'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) }
+  const fmtTime = (ts) => { if (!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) }
 
   const totalSessions = sessions.length
   const totalTime     = sessions.reduce((a,s) => a + (s.totalDuration||0), 0)
@@ -18,26 +21,26 @@ export default function HistorialPage() {
 
   if (loading) return (
     <div className="animate-in">
-      <div className="page-header"><h1 className="page-title">Historial</h1></div>
+      <div className="page-header"><h1 className="page-title">{t('hist.title')}</h1></div>
       <div className="loading-grid">{[1,2,3].map(i=><div key={i} className="skeleton-card" style={{height:100}}/>)}</div>
     </div>
   )
 
   return (
     <div className="animate-in">
-      <div className="page-header"><h1 className="page-title">Historial</h1></div>
+      <div className="page-header"><h1 className="page-title">{t('hist.title')}</h1></div>
 
       {sessions.length > 0 && (
         <div className="history-stats-grid">
-          <div className="history-stat card"><span className="hstat-value">{totalSessions}</span><span className="hstat-label">Sesiones</span></div>
-          <div className="history-stat card"><span className="hstat-value">{fmt(totalTime)}</span><span className="hstat-label">Tiempo total</span></div>
-          <div className="history-stat card"><span className="hstat-value">{avgSat>0?avgSat.toFixed(1):'—'}</span><span className="hstat-label">Satisfacción prom.</span></div>
-          <div className="history-stat card"><span className="hstat-value">{totalSkipped}</span><span className="hstat-label">Ejercicios saltados</span></div>
+          <div className="history-stat card"><span className="hstat-value">{totalSessions}</span><span className="hstat-label">{t('hist.sessions')}</span></div>
+          <div className="history-stat card"><span className="hstat-value">{fmt(totalTime)}</span><span className="hstat-label">{t('hist.totalTime')}</span></div>
+          <div className="history-stat card"><span className="hstat-value">{avgSat>0?avgSat.toFixed(1):'—'}</span><span className="hstat-label">{t('hist.avgSat')}</span></div>
+          <div className="history-stat card"><span className="hstat-value">{totalSkipped}</span><span className="hstat-label">{t('hist.skipped')}</span></div>
         </div>
       )}
 
       {sessions.length === 0 ? (
-        <div className="empty-state"><ChartIcon size={48} /><p>Aún no has completado ninguna sesión.<br />¡Comienza desde Rutinas!</p></div>
+        <div className="empty-state"><ChartIcon size={48} /><p>{t('hist.empty')}<br />{t('hist.empty.hint')}</p></div>
       ) : (
         <div className="history-list">
           {sessions.map(s => (
@@ -48,10 +51,10 @@ export default function HistorialPage() {
                   <p className="history-card-date">{fmtDate(s.startTime)} · {fmtTime(s.startTime)}</p>
                 </div>
                 <div className="history-card-stats">
-                  <div className="hcard-stat"><span className="hcard-val">{fmt(s.totalDuration)}</span><span className="hcard-lbl">Duración</span></div>
-                  <div className="hcard-stat"><span className="hcard-val">{s.exercises?.filter(e=>!e.skipped).length||0}</span><span className="hcard-lbl">Completados</span></div>
-                  <div className="hcard-stat"><span className="hcard-val">{s.exercises?.filter(e=>e.skipped).length||0}</span><span className="hcard-lbl">Saltados</span></div>
-                  <div className="hcard-stat"><Stars value={s.overallSatisfaction}/><span className="hcard-lbl">Satisfacción</span></div>
+                  <div className="hcard-stat"><span className="hcard-val">{fmt(s.totalDuration)}</span><span className="hcard-lbl">{t('hist.duration')}</span></div>
+                  <div className="hcard-stat"><span className="hcard-val">{s.exercises?.filter(e=>!e.skipped).length||0}</span><span className="hcard-lbl">{t('hist.completed')}</span></div>
+                  <div className="hcard-stat"><span className="hcard-val">{s.exercises?.filter(e=>e.skipped).length||0}</span><span className="hcard-lbl">{t('hist.skippedStat')}</span></div>
+                  <div className="hcard-stat"><Stars value={s.overallSatisfaction}/><span className="hcard-lbl">{t('hist.satisfaction')}</span></div>
                 </div>
               </div>
             </div>
@@ -68,7 +71,7 @@ export default function HistorialPage() {
             </div>
             <div className="session-detail-meta">
               <span>{fmtDate(selected.startTime)}</span><span>·</span>
-              <span>{fmt(selected.totalDuration)} de duración</span><span>·</span>
+              <span>{fmt(selected.totalDuration)}</span><span>·</span>
               <Stars value={selected.overallSatisfaction}/>
             </div>
             <div className="session-detail-exercises">
@@ -78,11 +81,15 @@ export default function HistorialPage() {
                     <span className="detail-num">{i+1}</span>
                     <div className="detail-ex-info">
                       <span className="detail-ex-name">{ex.exerciseName}</span>
-                      <span className="detail-ex-sets">{ex.skipped?`Saltado (${ex.completedSets}/${ex.plannedSets} series)`:`${ex.completedSets}/${ex.plannedSets} series completadas`}</span>
+                      <span className="detail-ex-sets">
+                        {ex.skipped
+                          ? `${t('hist.setSkipped')} (${ex.completedSets}/${ex.plannedSets})`
+                          : `${ex.completedSets}/${ex.plannedSets} ${t('hist.sets')}`}
+                      </span>
                     </div>
                   </div>
                   <div className="detail-ex-right">
-                    {ex.skipped ? <span className="badge badge-danger">Saltado</span> : <Stars value={ex.satisfaction}/>}
+                    {ex.skipped ? <span className="badge badge-danger">{t('hist.setSkipped')}</span> : <Stars value={ex.satisfaction}/>}
                   </div>
                 </div>
               ))}

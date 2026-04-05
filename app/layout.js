@@ -1,5 +1,6 @@
 import { Cormorant_Garamond, Nunito_Sans } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { LangProvider } from '@/contexts/LangContext'
 import './globals.css'
 
 const cormorant = Cormorant_Garamond({
@@ -28,7 +29,9 @@ export default function RootLayout({ children }) {
     <html lang="es" className={`${cormorant.variable} ${nunito.variable}`}>
       <body>
         <AuthProvider>
-          {children}
+          <LangProvider>
+            {children}
+          </LangProvider>
         </AuthProvider>
       </body>
     </html>

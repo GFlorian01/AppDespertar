@@ -807,6 +807,7 @@ textarea.form-input { min-height: 100px; resize: none; }
     background: var(--bg-card);
   }
   .sidebar-brand, .sidebar-footer { display: none; }
+  .mobile-profile-btn { display: flex !important; }
   .sidebar-nav { flex-direction: row; width: 100%; gap: 0; height: 100%; }
   .nav-item {
     flex: 1; flex-direction: column; gap: 4px;
@@ -921,6 +922,22 @@ textarea.form-input { min-height: 100px; resize: none; }
 }
 .share-toggle .unilateral-box { border-color: var(--sage); }
 input:checked ~ .share-box { background: var(--sage) !important; border-color: var(--sage) !important; }
+
+/* ── Mobile profile nav button ── */
+.mobile-profile-btn { display: none; background: none; border: none; cursor: pointer; font-family: var(--font-body); }
+.mobile-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+
+/* ── Language toggle ── */
+.lang-toggle { display: flex; gap: 8px; }
+.lang-btn {
+  flex: 1; padding: 10px 12px; border-radius: var(--radius);
+  background: var(--bg-elevated); border: 1.5px solid var(--border);
+  color: var(--text-muted); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all .15s; font-family: var(--font-body);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.lang-btn:hover { border-color: var(--border-light); color: var(--text); }
+.lang-btn.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); font-weight: 700; }
 
 /* ── Profile edit ─────────────────────────────────────── */
 

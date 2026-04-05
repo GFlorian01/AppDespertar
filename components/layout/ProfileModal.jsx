@@ -2,12 +2,14 @@
 
 import { useState, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/contexts/LangContext'
 
 const CLOUD  = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD
 const PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_PRESET
 
 export default function ProfileModal({ onClose }) {
   const { user, updateUserProfile } = useAuth()
+  const { lang, setLang, t } = useLang()
   const [name,      setName]      = useState(user?.displayName || '')
   const [photo,     setPhoto]     = useState(user?.photoURL    || '')
   const [uploading, setUploading] = useState(false)
@@ -47,7 +49,7 @@ export default function ProfileModal({ onClose }) {
       <div className="profile-modal card" onClick={e => e.stopPropagation()}>
 
         <div className="profile-modal-header">
-          <h3 className="profile-modal-title">Editar perfil</h3>
+          <h3 className="profile-modal-title">{t('profile.title')}</h3>
           <button className="btn-icon" onClick={onClose}><CloseIcon /></button>
         </div>
 
@@ -63,29 +65,50 @@ export default function ProfileModal({ onClose }) {
             </div>
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
-          <span className="profile-avatar-hint">{uploading ? 'Subiendo...' : 'Toca para cambiar foto'}</span>
+          <span className="profile-avatar-hint">{uploading ? t('profile.uploading') : t('profile.photo')}</span>
         </div>
 
         {/* Nombre */}
         <div className="form-group">
-          <label className="form-label">Nombre</label>
+          <label className="form-label">{t('profile.name')}</label>
           <input
             className="form-input"
             value={name}
             onChange={e => setName(e.target.value)}
-            placeholder="Tu nombre"
+            placeholder={t('profile.name.ph')}
             onKeyDown={e => e.key === 'Enter' && handleSave()}
           />
         </div>
 
+        {/* Idioma / Language */}
+        <div className="form-group">
+          <label className="form-label">{t('profile.lang')}</label>
+          <div className="lang-toggle">
+            <button
+              className={`lang-btn ${lang === 'es' ? 'active' : ''}`}
+              onClick={() => setLang('es')}
+              type="button"
+            >
+              🇪🇸 {t('profile.lang.es')}
+            </button>
+            <button
+              className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+              onClick={() => setLang('en')}
+              type="button"
+            >
+              🇺🇸 {t('profile.lang.en')}
+            </button>
+          </div>
+        </div>
+
         <div className="profile-modal-actions">
-          <button className="btn btn-ghost" onClick={onClose}>Cancelar</button>
+          <button className="btn btn-ghost" onClick={onClose}>{t('profile.cancel')}</button>
           <button
             className="btn btn-primary"
             onClick={handleSave}
             disabled={saving || uploading || !name.trim()}
           >
-            {saving ? 'Guardando...' : 'Guardar'}
+            {saving ? t('profile.saving') : t('profile.save')}
           </button>
         </div>
 
