@@ -238,7 +238,7 @@ export default function SessionPage() {
 
       <div className="session-main">
         <div className="session-video-wrap">
-          <video ref={videoRef} src={currentEx.videoUrl} className="session-video" muted playsInline />
+          <video ref={videoRef} src={currentEx.videoUrl} className="session-video" muted playsInline autoPlay />
           {phase === PHASE.REST && (
             <div className="rest-overlay">
               <div className="rest-countdown">{restSecs}</div>
