@@ -7,7 +7,7 @@ import { useSessions } from '@/hooks/useSessions'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLang } from '@/contexts/LangContext'
 
-const PHASE = { EXERCISE: 'exercise', REST: 'rest', DONE: 'done' }
+const PHASE = { INTRO: 'intro', EXERCISE: 'exercise', REST: 'rest', DONE: 'done' }
 
 export default function SessionPage() {
   const { routineId } = useParams()
@@ -21,7 +21,7 @@ export default function SessionPage() {
 
   const [exIdx,       setExIdx]       = useState(0)
   const [setIdx,      setSetIdx]      = useState(0)
-  const [phase,       setPhase]       = useState(PHASE.EXERCISE)
+  const [phase,       setPhase]       = useState(PHASE.INTRO)
   const [restSecs,    setRestSecs]    = useState(0)
   const [elapsed,     setElapsed]     = useState(0)
   const [results,     setResults]     = useState([])
@@ -33,30 +33,35 @@ export default function SessionPage() {
   const videoRef       = useRef(null)
   const sessionStart   = useRef(Date.now())
   const restRef        = useRef(null)
-  const welcomeSpoken  = useRef(false)
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/login')
   }, [user, authLoading, router])
 
-  // TTS: welcome message on session start
+  // INTRO phase: welcome TTS + auto-transition to EXERCISE
   useEffect(() => {
-    if (!routine || !user || welcomeSpoken.current || sessionsLoading) return
-    welcomeSpoken.current = true
+    if (phase !== PHASE.INTRO || !routine || !user || sessionsLoading) return
     const firstName = (user.displayName || '').split(' ')[0]
     const sessionNum = sessions.length + 1
     const text = lang === 'en'
       ? `Welcome${firstName ? ' ' + firstName : ''}, starting session ${sessionNum} of ${routine.name}`
       : `Bienvenido${firstName ? ' ' + firstName : ''}, estás iniciando la sesión ${sessionNum} de ${routine.name}`
-    setTimeout(() => {
-      if (typeof window === 'undefined' || !window.speechSynthesis) return
+
+    let done = false
+    const go = () => { if (!done) { done = true; setPhase(PHASE.EXERCISE) } }
+
+    if (window.speechSynthesis) {
       window.speechSynthesis.cancel()
       const utt = new SpeechSynthesisUtterance(text)
       utt.lang = lang === 'en' ? 'en-US' : 'es-ES'
       utt.rate = 0.9
+      utt.onend = () => setTimeout(go, 400)
       window.speechSynthesis.speak(utt)
-    }, 600)
-  }, [routine, user, sessionsLoading])
+    }
+    // Fallback: transition after 6s even if TTS fails
+    const fallback = setTimeout(go, 6000)
+    return () => clearTimeout(fallback)
+  }, [phase, routine, user, sessionsLoading])
 
   // TTS: countdown in the last 5 seconds of rest (offset by 1s to compensate TTS latency)
   useEffect(() => {
@@ -73,7 +78,8 @@ export default function SessionPage() {
   }, [restSecs, phase])
 
   useEffect(() => {
-    if (phase === PHASE.DONE) return
+    if (phase === PHASE.DONE || phase === PHASE.INTRO) return
+    sessionStart.current = Date.now() - elapsed * 1000
     const ti = setInterval(() => setElapsed(Math.floor((Date.now() - sessionStart.current) / 1000)), 1000)
     return () => clearInterval(ti)
   }, [phase])
@@ -83,7 +89,7 @@ export default function SessionPage() {
   const isLastEx  = routine && exIdx >= routine.exercises.length - 1
 
   useEffect(() => {
-    const vid = videoRef.current; if (!vid || !currentEx) return
+    const vid = videoRef.current; if (!vid || !currentEx || phase === PHASE.INTRO) return
     const tStart = currentEx.trimStart || 0
     const tEnd   = currentEx.trimEnd   || 0
 
@@ -238,7 +244,23 @@ export default function SessionPage() {
 
       <div className="session-main">
         <div className="session-video-wrap">
-          <video ref={videoRef} src={currentEx.videoUrl} className="session-video" muted playsInline autoPlay />
+          <video ref={videoRef} src={currentEx.videoUrl} className="session-video" muted playsInline preload="metadata" />
+          {phase === PHASE.INTRO && (
+            <div className="intro-overlay">
+              <div className="intro-icon">🌅</div>
+              <h1 className="intro-routine">{routine.name}</h1>
+              <p className="intro-session">
+                {lang === 'en' ? 'Session' : 'Sesión'} {(sessions?.length || 0) + 1}
+              </p>
+              {user?.displayName && (
+                <p className="intro-greeting">
+                  {lang === 'en'
+                    ? `Let's go, ${user.displayName.split(' ')[0]}!`
+                    : `¡Vamos, ${user.displayName.split(' ')[0]}!`}
+                </p>
+              )}
+            </div>
+          )}
           {phase === PHASE.REST && (
             <div className="rest-overlay">
               <div className="rest-countdown">{restSecs}</div>
@@ -275,7 +297,7 @@ export default function SessionPage() {
 
           <div className="session-actions">
             <button className="btn btn-ghost" onClick={skipExercise}><SkipIcon /> {t('session.skip')}</button>
-            <button className="btn btn-primary session-main-btn" onClick={handleMainBtn} disabled={phase===PHASE.REST}>
+            <button className="btn btn-primary session-main-btn" onClick={handleMainBtn} disabled={phase===PHASE.REST||phase===PHASE.INTRO}>
               {mainBtnLabel}
             </button>
           </div>
