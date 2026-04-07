@@ -307,7 +307,7 @@ export default function SessionPage() {
       <div className="session-queue">
         {routine.exercises.map((ex,i)=>(
           <div key={i} className={`queue-item ${i===exIdx?'active':i<exIdx?'done':''}`}>
-            <div className="queue-thumb"><video src={ex.videoUrl} muted playsInline className="queue-video" /></div>
+            <div className="queue-thumb"><video src={ex.videoUrl} muted playsInline preload="metadata" className="queue-video" onLoadedMetadata={e => { e.target.currentTime = ex.trimStart || 0 }} /></div>
             <div className="queue-info"><span className="queue-name">{ex.exerciseName}</span><span className="queue-meta">{ex.sets}×{ex.reps}</span></div>
             {i<exIdx && <CheckMark />}
           </div>
