@@ -58,13 +58,14 @@ export default function SessionPage() {
     }, 600)
   }, [routine, user, sessionsLoading])
 
-  // TTS: countdown in the last 5 seconds of rest
+  // TTS: countdown in the last 5 seconds of rest (offset by 1s to compensate TTS latency)
   useEffect(() => {
-    if (phase !== PHASE.REST || restSecs > 5 || restSecs <= 0) return
+    if (phase !== PHASE.REST || restSecs > 6 || restSecs <= 1) return
     if (typeof window === 'undefined' || !window.speechSynthesis) return
-    const text = restSecs === 5
+    const num = restSecs - 1
+    const text = num === 5
       ? (lang === 'en' ? 'Starting in 5' : 'Se inicia en 5')
-      : String(restSecs)
+      : String(num)
     const utt = new SpeechSynthesisUtterance(text)
     utt.lang = lang === 'en' ? 'en-US' : 'es-ES'
     utt.rate = 1.0
@@ -83,16 +84,27 @@ export default function SessionPage() {
 
   useEffect(() => {
     const vid = videoRef.current; if (!vid || !currentEx) return
-    vid.currentTime = currentEx.trimStart || 0
-    vid.play().catch(() => {})
-    const onTimeUpdate = () => {
-      if (currentEx.trimEnd && vid.currentTime >= currentEx.trimEnd)
-        vid.currentTime = currentEx.trimStart || 0
+    const tStart = currentEx.trimStart || 0
+    const tEnd   = currentEx.trimEnd   || 0
+
+    const seekAndPlay = () => {
+      vid.currentTime = tStart
+      vid.play().catch(() => {})
     }
-    const onEnded = () => { vid.currentTime = currentEx.trimStart || 0; vid.play().catch(() => {}) }
+
+    // Wait for metadata before seeking — setting currentTime before metadata loads is ignored
+    if (vid.readyState >= 1) seekAndPlay()
+    else vid.addEventListener('loadedmetadata', seekAndPlay, { once: true })
+
+    const onTimeUpdate = () => {
+      if (tEnd > tStart && vid.currentTime >= tEnd) vid.currentTime = tStart
+    }
+    const onEnded = () => { vid.currentTime = tStart; vid.play().catch(() => {}) }
+
     vid.addEventListener('timeupdate', onTimeUpdate)
     vid.addEventListener('ended', onEnded)
     return () => {
+      vid.removeEventListener('loadedmetadata', seekAndPlay)
       vid.removeEventListener('timeupdate', onTimeUpdate)
       vid.removeEventListener('ended', onEnded)
     }
@@ -226,7 +238,7 @@ export default function SessionPage() {
 
       <div className="session-main">
         <div className="session-video-wrap">
-          <video ref={videoRef} src={currentEx.videoUrl} className="session-video" muted playsInline autoPlay />
+          <video ref={videoRef} src={currentEx.videoUrl} className="session-video" muted playsInline />
           {phase === PHASE.REST && (
             <div className="rest-overlay">
               <div className="rest-countdown">{restSecs}</div>
