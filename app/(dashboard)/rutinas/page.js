@@ -78,7 +78,8 @@ export default function RutinasPage() {
                 <div className="routine-card-thumbs">
                   {r.exercises?.slice(0, 3).map((ex, i) => (
                     <div key={i} className="mini-thumb">
-                      <video src={ex.videoUrl} muted playsInline className="mini-video"
+                      <video src={ex.videoUrl} muted playsInline preload="metadata" className="mini-video"
+                        onLoadedMetadata={e => { e.target.currentTime = ex.trimStart || 0 }}
                         onMouseEnter={e => e.target.play()}
                         onMouseLeave={e => { e.target.pause(); e.target.currentTime = ex.trimStart || 0 }} />
                     </div>
@@ -156,7 +157,8 @@ export default function RutinasPage() {
                         {availableEx.map(ex => (
                           <button key={ex.id} type="button" className="picker-item" onClick={() => addEx(ex)}>
                             <div className="picker-thumb">
-                              <video src={ex.videoUrl} muted playsInline className="picker-video"
+                              <video src={ex.videoUrl} muted playsInline preload="metadata" className="picker-video"
+                                onLoadedMetadata={e => { e.target.currentTime = ex.trimStart || 0 }}
                                 onMouseEnter={e => e.target.play()}
                                 onMouseLeave={e => { e.target.pause(); e.target.currentTime = ex.trimStart || 0 }} />
                             </div>
