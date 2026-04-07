@@ -12,9 +12,9 @@ const PHASE = { EXERCISE: 'exercise', REST: 'rest', DONE: 'done' }
 export default function SessionPage() {
   const { routineId } = useParams()
   const { routines } = useRoutines()
-  const { saveSession } = useSessions()
+  const { saveSession, sessions, loading: sessionsLoading } = useSessions()
   const { user, loading: authLoading } = useAuth()
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const router = useRouter()
 
   const routine = routines.find(r => r.id === routineId)
@@ -30,13 +30,46 @@ export default function SessionPage() {
   const [saving,      setSaving]      = useState(false)
   const [sidesDone,   setSidesDone]   = useState(0)
 
-  const videoRef     = useRef(null)
-  const sessionStart = useRef(Date.now())
-  const restRef      = useRef(null)
+  const videoRef       = useRef(null)
+  const sessionStart   = useRef(Date.now())
+  const restRef        = useRef(null)
+  const welcomeSpoken  = useRef(false)
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/login')
   }, [user, authLoading, router])
+
+  // TTS: welcome message on session start
+  useEffect(() => {
+    if (!routine || !user || welcomeSpoken.current || sessionsLoading) return
+    welcomeSpoken.current = true
+    const firstName = (user.displayName || '').split(' ')[0]
+    const sessionNum = sessions.length + 1
+    const text = lang === 'en'
+      ? `Welcome${firstName ? ' ' + firstName : ''}, starting session ${sessionNum} of ${routine.name}`
+      : `Bienvenido${firstName ? ' ' + firstName : ''}, estás iniciando la sesión ${sessionNum} de ${routine.name}`
+    setTimeout(() => {
+      if (typeof window === 'undefined' || !window.speechSynthesis) return
+      window.speechSynthesis.cancel()
+      const utt = new SpeechSynthesisUtterance(text)
+      utt.lang = lang === 'en' ? 'en-US' : 'es-ES'
+      utt.rate = 0.9
+      window.speechSynthesis.speak(utt)
+    }, 600)
+  }, [routine, user, sessionsLoading])
+
+  // TTS: countdown in the last 5 seconds of rest
+  useEffect(() => {
+    if (phase !== PHASE.REST || restSecs > 5 || restSecs <= 0) return
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
+    const text = restSecs === 5
+      ? (lang === 'en' ? 'Starting in 5' : 'Se inicia en 5')
+      : String(restSecs)
+    const utt = new SpeechSynthesisUtterance(text)
+    utt.lang = lang === 'en' ? 'en-US' : 'es-ES'
+    utt.rate = 1.0
+    window.speechSynthesis.speak(utt)
+  }, [restSecs, phase])
 
   useEffect(() => {
     if (phase === PHASE.DONE) return
@@ -52,9 +85,17 @@ export default function SessionPage() {
     const vid = videoRef.current; if (!vid || !currentEx) return
     vid.currentTime = currentEx.trimStart || 0
     vid.play().catch(() => {})
-    const handle = () => { if (vid.currentTime >= (currentEx.trimEnd || vid.duration)) vid.currentTime = currentEx.trimStart || 0 }
-    vid.addEventListener('timeupdate', handle)
-    return () => vid.removeEventListener('timeupdate', handle)
+    const onTimeUpdate = () => {
+      if (currentEx.trimEnd && vid.currentTime >= currentEx.trimEnd)
+        vid.currentTime = currentEx.trimStart || 0
+    }
+    const onEnded = () => { vid.currentTime = currentEx.trimStart || 0; vid.play().catch(() => {}) }
+    vid.addEventListener('timeupdate', onTimeUpdate)
+    vid.addEventListener('ended', onEnded)
+    return () => {
+      vid.removeEventListener('timeupdate', onTimeUpdate)
+      vid.removeEventListener('ended', onEnded)
+    }
   }, [exIdx, phase])
 
   useEffect(() => {
@@ -185,7 +226,7 @@ export default function SessionPage() {
 
       <div className="session-main">
         <div className="session-video-wrap">
-          <video ref={videoRef} src={currentEx.videoUrl} className="session-video" muted playsInline autoPlay loop />
+          <video ref={videoRef} src={currentEx.videoUrl} className="session-video" muted playsInline autoPlay />
           {phase === PHASE.REST && (
             <div className="rest-overlay">
               <div className="rest-countdown">{restSecs}</div>
