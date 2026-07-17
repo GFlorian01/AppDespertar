@@ -12,6 +12,7 @@ const CROP_ASPECTS = [
   { value: 'custom',    label: 'Personalizado', ratio: null },
 ]
 const MIN_CROP = 0.15 // smallest side of a custom crop box, as a fraction of the frame
+const RAIL_INSET = 20 // px each side — matches .vt-rail-wrap's CSS padding, keeps handles/labels off the viewport edge
 
 export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, onChange, cropAspect = 'original', cropX = 0, cropY = 0, cropW = 1, cropH = 1, onCropChange }) {
   const videoRef  = useRef(null)
@@ -36,8 +37,14 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
   const getPct    = useCallback((clientX) => {
     const rail = railRef.current; if (!rail) return 0
     const { left, width } = rail.getBoundingClientRect()
-    return Math.max(0, Math.min(100, ((clientX - left) / width) * 100))
+    const usable = width - RAIL_INSET * 2
+    return Math.max(0, Math.min(100, ((clientX - left - RAIL_INSET) / usable) * 100))
   }, [])
+  // Positions/widths below are percentages of the trim duration, but the rail's
+  // draggable track is inset by RAIL_INSET on each side — convert through calc()
+  // so a handle at 0%/100% lands on the track's edge, not the wrap's outer edge.
+  const toLeft  = (pct) => `calc(${RAIL_INSET}px + (100% - ${RAIL_INSET * 2}px) * ${(pct / 100).toFixed(4)})`
+  const toWidth = (pct) => `calc((100% - ${RAIL_INSET * 2}px) * ${(pct / 100).toFixed(4)})`
 
   // Sync seek
   useEffect(() => {
@@ -332,24 +339,24 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
       <div className="vt-rail-wrap" ref={railRef}>
         {/* Track */}
         <div className="vt-track-bg" />
-        <div className="vt-track-sel" style={{ left: `${startPct}%`, width: `${endPct - startPct}%` }} />
+        <div className="vt-track-sel" style={{ left: toLeft(startPct), width: toWidth(endPct - startPct) }} />
 
         {/* Scene markers on rail */}
         {scenes && scenes.map((scene, i) => (
           <div
             key={i}
             className="vt-scene-marker"
-            style={{ left: `${toPercent(scene.start)}%` }}
+            style={{ left: toLeft(toPercent(scene.start)) }}
           />
         ))}
 
         {/* Playhead */}
-        <div className="vt-playhead" style={{ left: `${currentPct}%` }} />
+        <div className="vt-playhead" style={{ left: toLeft(currentPct) }} />
 
         {/* Start handle */}
         <div
           className="vt-handle vt-handle-start"
-          style={{ left: `${startPct}%` }}
+          style={{ left: toLeft(startPct) }}
           onMouseDown={(e) => { e.preventDefault(); setDragging('start') }}
           onTouchStart={(e) => { e.preventDefault(); setDragging('start') }}
         >
@@ -360,7 +367,7 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
         {/* End handle */}
         <div
           className="vt-handle vt-handle-end"
-          style={{ left: `${endPct}%` }}
+          style={{ left: toLeft(endPct) }}
           onMouseDown={(e) => { e.preventDefault(); setDragging('end') }}
           onTouchStart={(e) => { e.preventDefault(); setDragging('end') }}
         >

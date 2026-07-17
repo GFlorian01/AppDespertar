@@ -174,7 +174,7 @@ textarea.form-input { resize: vertical; }
 }
 .fullpanel-left-actions {
   margin-top: auto;
-  display: flex; gap: 12px; justify-content: flex-end;
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end;
   padding-top: 20px;
   border-top: 1px solid var(--border);
 }
