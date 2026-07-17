@@ -104,17 +104,21 @@ export default function SessionPage() {
     if (vid.readyState >= 1) seekAndPlay()
     else vid.addEventListener('loadedmetadata', seekAndPlay, { once: true })
 
-    const onTimeUpdate = () => {
+    // Polled via rAF (~16ms) instead of 'timeupdate' (~250ms), which let playback
+    // bleed into the next exercise's footage before snapping back to tStart
+    let raf
+    const tick = () => {
       if (tEnd > tStart && vid.currentTime >= tEnd) vid.currentTime = tStart
+      raf = requestAnimationFrame(tick)
     }
+    raf = requestAnimationFrame(tick)
     const onEnded = () => { vid.currentTime = tStart; vid.play().catch(() => {}) }
 
-    vid.addEventListener('timeupdate', onTimeUpdate)
     vid.addEventListener('ended', onEnded)
     return () => {
       vid.removeEventListener('loadedmetadata', seekAndPlay)
-      vid.removeEventListener('timeupdate', onTimeUpdate)
       vid.removeEventListener('ended', onEnded)
+      cancelAnimationFrame(raf)
     }
   }, [exIdx, phase])
 

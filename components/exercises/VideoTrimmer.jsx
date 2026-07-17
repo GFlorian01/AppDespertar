@@ -45,17 +45,20 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
     if (Math.abs(vid.currentTime - currentTime) > 0.5) vid.currentTime = currentTime
   }, [currentTime])
 
-  // Loop within trim range
+  // Loop within trim range — polled via rAF (~16ms) instead of 'timeupdate' (~250ms),
+  // which let playback bleed into the next scene before snapping back to start
   useEffect(() => {
     const vid = videoRef.current; if (!vid) return
-    const handle = () => {
+    let raf
+    const tick = () => {
       if (vid.currentTime >= end || vid.currentTime < start - 0.1) {
         vid.currentTime = start
       }
       setCurrentTime(vid.currentTime)
+      raf = requestAnimationFrame(tick)
     }
-    vid.addEventListener('timeupdate', handle)
-    return () => vid.removeEventListener('timeupdate', handle)
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
   }, [start, end])
 
   // Drag logic
