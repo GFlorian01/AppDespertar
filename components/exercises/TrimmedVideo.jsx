@@ -1,8 +1,9 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
+import { cropStyle } from '@/lib/cloudinaryCrop'
 
-export default function TrimmedVideo({ src, trimStart = 0, trimEnd = 0, className }) {
+export default function TrimmedVideo({ src, trimStart = 0, trimEnd = 0, cropAspect, cropX, cropY, cropW, cropH, className }) {
   const ref = useRef(null)
   const start = trimStart || 0
   const end   = trimEnd   || 0
@@ -14,5 +15,11 @@ export default function TrimmedVideo({ src, trimStart = 0, trimEnd = 0, classNam
     vid.addEventListener('timeupdate', onTime)
     return () => vid.removeEventListener('timeupdate', onTime)
   }, [src, start, end])
-  return <video ref={ref} src={src} className={className} muted playsInline preload="auto" />
+  return (
+    <video
+      ref={ref} src={src} className={className}
+      style={cropStyle(cropAspect, cropX, cropY, cropW, cropH)}
+      muted playsInline preload="auto"
+    />
+  )
 }

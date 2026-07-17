@@ -5,7 +5,6 @@ import { useExercises } from '@/hooks/useExercises'
 import { useAuth } from '@/contexts/AuthContext'
 import VideoTrimmer from '@/components/exercises/VideoTrimmer'
 import TrimmedVideo from '@/components/exercises/TrimmedVideo'
-import { cropUrl } from '@/lib/cloudinaryCrop'
 import { PlusIcon, CloseIcon, EditIcon, TrashIcon } from '@/components/Icons'
 
 const CATEGORIES = [
@@ -298,9 +297,10 @@ function ExCard({ exercise, isOwn, onEdit, onDelete }) {
     <div className="exercise-card card animate-in">
       <div className="exercise-thumb">
         <TrimmedVideo
-          src={cropUrl(exercise.videoUrl, exercise.cropAspect, exercise.cropX, exercise.cropY, exercise.cropW, exercise.cropH)}
+          src={exercise.videoUrl}
           trimStart={exercise.trimStart || 0}
           trimEnd={exercise.trimEnd || exercise.videoDuration || 0}
+          cropAspect={exercise.cropAspect} cropX={exercise.cropX} cropY={exercise.cropY} cropW={exercise.cropW} cropH={exercise.cropH}
           className="thumb-video"
         />
         <div className={`badge badge-${cat?.color || 'accent'} ex-badge`}>{cat?.label}</div>

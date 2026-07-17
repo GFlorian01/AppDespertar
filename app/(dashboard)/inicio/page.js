@@ -6,7 +6,6 @@ import { useLang } from '@/contexts/LangContext'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useExercises } from '@/hooks/useExercises'
 import { useSessions } from '@/hooks/useSessions'
-import { cropUrl } from '@/lib/cloudinaryCrop'
 import { PlayIcon } from '@/components/Icons'
 import TrimmedVideo from '@/components/exercises/TrimmedVideo'
 import Stars from '@/components/Stars'
@@ -110,7 +109,11 @@ export default function HomePage() {
                 <div className="hrc-thumbs">
                   {r.exercises?.slice(0, 2).map((ex, i) => (
                     <div key={i} className="hrc-thumb">
-                      <TrimmedVideo src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY, ex.cropW, ex.cropH)} trimStart={ex.trimStart || 0} trimEnd={ex.trimEnd || 0} className="hrc-video" />
+                      <TrimmedVideo
+                        src={ex.videoUrl} trimStart={ex.trimStart || 0} trimEnd={ex.trimEnd || 0}
+                        cropAspect={ex.cropAspect} cropX={ex.cropX} cropY={ex.cropY} cropW={ex.cropW} cropH={ex.cropH}
+                        className="hrc-video"
+                      />
                     </div>
                   ))}
                 </div>

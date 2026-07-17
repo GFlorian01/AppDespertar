@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useExercises } from '@/hooks/useExercises'
-import { cropUrl } from '@/lib/cloudinaryCrop'
+import { cropStyle } from '@/lib/cloudinaryCrop'
 import { PlusIcon, CloseIcon, EditIcon, TrashIcon, PlayIcon, ListIcon, DumbbellIcon } from '@/components/Icons'
 
 const EMPTY = { name: '', description: '', exercises: [] }
@@ -80,7 +80,7 @@ export default function RutinasPage() {
                 <div className="routine-card-thumbs">
                   {r.exercises?.slice(0, 3).map((ex, i) => (
                     <div key={i} className="mini-thumb">
-                      <video src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY, ex.cropW, ex.cropH)} muted playsInline preload="metadata" className="mini-video"
+                      <video src={ex.videoUrl} style={cropStyle(ex.cropAspect, ex.cropX, ex.cropY, ex.cropW, ex.cropH)} muted playsInline preload="auto" className="mini-video"
                         onLoadedMetadata={e => { e.target.currentTime = ex.trimStart || 0 }}
                         onMouseEnter={e => e.target.play()}
                         onMouseLeave={e => { e.target.pause(); e.target.currentTime = ex.trimStart || 0 }} />
@@ -159,7 +159,7 @@ export default function RutinasPage() {
                         {availableEx.map(ex => (
                           <button key={ex.id} type="button" className="picker-item" onClick={() => addEx(ex)}>
                             <div className="picker-thumb">
-                              <video src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY, ex.cropW, ex.cropH)} muted playsInline preload="metadata" className="picker-video"
+                              <video src={ex.videoUrl} style={cropStyle(ex.cropAspect, ex.cropX, ex.cropY, ex.cropW, ex.cropH)} muted playsInline preload="auto" className="picker-video"
                                 onLoadedMetadata={e => { e.target.currentTime = ex.trimStart || 0 }}
                                 onMouseEnter={e => e.target.play()}
                                 onMouseLeave={e => { e.target.pause(); e.target.currentTime = ex.trimStart || 0 }} />
