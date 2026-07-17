@@ -165,7 +165,10 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
     if (vid) { vid.currentTime = scene.start; vid.play(); setPlaying(true) }
   }
 
-  const fmt = (t) => `${Math.floor(t / 60)}:${Math.floor(t % 60).toString().padStart(2, '0')}`
+  // ponytail: shows tenths so the label matches the continuous value actually stored —
+  // playback can still land a frame or two off since browsers seek compressed video to
+  // the nearest keyframe, not the exact time; that ceiling needs re-encoding, not UI code
+  const fmt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`
 
   const startPct   = toPercent(start)
   const endPct     = toPercent(end)
@@ -207,6 +210,7 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
           src={videoUrl}
           className="vt-video"
           crossOrigin="anonymous"
+          preload="auto"
           autoPlay muted playsInline
           onLoadedMetadata={e => setVideoDims({ w: e.target.videoWidth, h: e.target.videoHeight })}
         />
