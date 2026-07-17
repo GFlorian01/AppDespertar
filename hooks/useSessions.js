@@ -19,13 +19,11 @@ export function useSessions() {
       collection(db, 'sessions'),
       where('userId', '==', user.uid)
     )
+    // ponytail: sorted client-side instead of orderBy('startTime') to avoid needing a
+    // composite Firestore index (where + orderBy on different fields requires one)
     const unsub = onSnapshot(q, (snap) => {
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      docs.sort((a, b) => {
-        const ta = a.startTime?.toMillis?.() ?? 0
-        const tb = b.startTime?.toMillis?.() ?? 0
-        return tb - ta
-      })
+      docs.sort((a, b) => (b.startTime?.toMillis?.() ?? 0) - (a.startTime?.toMillis?.() ?? 0))
       setSessions(docs)
       setLoading(false)
     })

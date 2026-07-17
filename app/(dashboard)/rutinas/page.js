@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useExercises } from '@/hooks/useExercises'
 import { cropUrl } from '@/lib/cloudinaryCrop'
+import { PlusIcon, CloseIcon, EditIcon, TrashIcon, PlayIcon, ListIcon, DumbbellIcon } from '@/components/Icons'
 
 const EMPTY = { name: '', description: '', exercises: [] }
 
@@ -43,7 +44,7 @@ export default function RutinasPage() {
     <div className="animate-in">
       <div className="page-header">
         <h1 className="page-title">Rutinas</h1>
-        <button className="btn btn-primary" onClick={openNew}><PlusIcon /> Nueva rutina</button>
+        <button className="btn btn-primary" onClick={openNew}><PlusIcon size={14} /> Nueva rutina</button>
       </div>
 
       {loading ? (
@@ -59,7 +60,7 @@ export default function RutinasPage() {
           ) : (
             <>
               <p>Aún no tienes rutinas. {exercises.length > 0 && `Tienes ${exercises.length} ejercicios listos para usar.`}</p>
-              <button className="btn btn-primary" onClick={openNew}><PlusIcon /> Crear primera rutina</button>
+              <button className="btn btn-primary" onClick={openNew}><PlusIcon size={14} /> Crear primera rutina</button>
             </>
           )}
         </div>
@@ -88,9 +89,9 @@ export default function RutinasPage() {
                 </div>
               </div>
               <div className="routine-card-actions">
-                <button className="btn btn-ghost btn-sm" onClick={() => openEdit(r)}><EditIcon /> Editar</button>
-                <button className="btn-icon btn-icon-danger" onClick={() => handleDelete(r)}><TrashIcon /></button>
-                <button className="btn btn-primary" onClick={() => router.push(`/sesion/${r.id}`)}><PlayIcon /> Iniciar sesión</button>
+                <button className="btn btn-ghost btn-sm" onClick={() => openEdit(r)}><EditIcon size={14} /> Editar</button>
+                <button className="btn-icon btn-icon-danger" onClick={() => handleDelete(r)}><TrashIcon size={14} /></button>
+                <button className="btn btn-primary" onClick={() => router.push(`/sesion/${r.id}`)}><PlayIcon size={14} /> Iniciar sesión</button>
               </div>
             </div>
           ))}
@@ -103,7 +104,7 @@ export default function RutinasPage() {
           {/* ── Header ── */}
           <div className="fullpanel-header">
             <h2 className="modal-title">{editing ? 'Editar rutina' : 'Nueva rutina'}</h2>
-            <button className="btn-icon" onClick={closeForm}><CloseIcon /></button>
+            <button className="btn-icon" onClick={closeForm}><CloseIcon size={14} /></button>
           </div>
           {/* Mobile compact: name + save in header area */}
           <div className="rt-mobile-bar">
@@ -167,7 +168,7 @@ export default function RutinasPage() {
                               {ex.name}
                               {ex.unilateral && <span className="badge-unilateral">↔ Por lado</span>}
                             </span>
-                            <PlusIcon />
+                            <PlusIcon size={14} />
                           </button>
                         ))}
                       </div>
@@ -191,7 +192,7 @@ export default function RutinasPage() {
                               <div className="order-actions">
                                 <button type="button" className="btn-icon" onClick={() => moveEx(idx, -1)} disabled={idx === 0}><ChevronUp /></button>
                                 <button type="button" className="btn-icon" onClick={() => moveEx(idx, 1)} disabled={idx === form.exercises.length - 1}><ChevronDown /></button>
-                                <button type="button" className="btn-icon btn-icon-danger" onClick={() => remEx(idx)}><CloseIcon /></button>
+                                <button type="button" className="btn-icon btn-icon-danger" onClick={() => remEx(idx)}><CloseIcon size={14} /></button>
                               </div>
                             </div>
                             <div className="order-item-params">
@@ -218,12 +219,5 @@ export default function RutinasPage() {
   )
 }
 
-const PlusIcon    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-const CloseIcon   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-const EditIcon    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-const TrashIcon   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-const PlayIcon    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-const ListIcon    = ({ size=24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
 const ChevronUp    = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
 const ChevronDown  = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-const DumbbellIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M4 8.5v7M20 8.5v7M2 10.5v3M22 10.5v3"/></svg>

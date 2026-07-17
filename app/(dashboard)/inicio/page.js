@@ -1,6 +1,5 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLang } from '@/contexts/LangContext'
@@ -8,6 +7,9 @@ import { useRoutines } from '@/hooks/useRoutines'
 import { useExercises } from '@/hooks/useExercises'
 import { useSessions } from '@/hooks/useSessions'
 import { cropUrl } from '@/lib/cloudinaryCrop'
+import { PlayIcon } from '@/components/Icons'
+import TrimmedVideo from '@/components/exercises/TrimmedVideo'
+import Stars from '@/components/Stars'
 
 export default function HomePage() {
   const { user } = useAuth()
@@ -108,12 +110,12 @@ export default function HomePage() {
                 <div className="hrc-thumbs">
                   {r.exercises?.slice(0, 2).map((ex, i) => (
                     <div key={i} className="hrc-thumb">
-                      <TrimmedThumb src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY, ex.cropW, ex.cropH)} trimStart={ex.trimStart || 0} trimEnd={ex.trimEnd || 0} className="hrc-video" />
+                      <TrimmedVideo src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY, ex.cropW, ex.cropH)} trimStart={ex.trimStart || 0} trimEnd={ex.trimEnd || 0} className="hrc-video" />
                     </div>
                   ))}
                 </div>
                 <button className="btn btn-primary" onClick={() => router.push(`/sesion/${r.id}`)}>
-                  <PlayIcon /> {t('home.start')}
+                  <PlayIcon size={13} /> {t('home.start')}
                 </button>
               </div>
             ))}
@@ -136,7 +138,7 @@ export default function HomePage() {
                 </div>
                 <div className="hri-stats">
                   <span>{Math.floor((s.totalDuration || 0) / 60)}m</span>
-                  <Stars value={s.overallSatisfaction} />
+                  <Stars value={s.overallSatisfaction} size={11} className="mini-stars-row" />
                 </div>
               </div>
             ))}
@@ -146,29 +148,3 @@ export default function HomePage() {
     </div>
   )
 }
-
-function TrimmedThumb({ src, trimStart = 0, trimEnd = 0, className }) {
-  const ref = useRef(null)
-  useEffect(() => {
-    const vid = ref.current; if (!vid) return
-    vid.currentTime = trimStart
-    vid.play().catch(() => {})
-    const onTime = () => { if (trimEnd > trimStart && vid.currentTime >= trimEnd) vid.currentTime = trimStart }
-    vid.addEventListener('timeupdate', onTime)
-    return () => vid.removeEventListener('timeupdate', onTime)
-  }, [src, trimStart, trimEnd])
-  return <video ref={ref} src={src} className={className} muted playsInline preload="metadata" />
-}
-
-function Stars({ value }) {
-  return (
-    <div className="mini-stars-row">
-      {[1,2,3,4,5].map(s => (
-        <svg key={s} width="11" height="11" viewBox="0 0 24 24" fill={s <= value ? '#d4a84b' : 'none'} stroke={s <= value ? '#d4a84b' : '#5e5349'} strokeWidth="2">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-      ))}
-    </div>
-  )
-}
-const PlayIcon = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>

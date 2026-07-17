@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useSessions } from '@/hooks/useSessions'
 import { useLang } from '@/contexts/LangContext'
+import { CloseIcon, ChartIcon } from '@/components/Icons'
+import Stars from '@/components/Stars'
 
 export default function HistorialPage() {
   const { sessions, loading } = useSessions()
@@ -100,18 +102,3 @@ export default function HistorialPage() {
     </div>
   )
 }
-
-function Stars({ value }) {
-  return (
-    <div className="mini-stars">
-      {[1,2,3,4,5].map(s=>(
-        <svg key={s} width="12" height="12" viewBox="0 0 24 24" fill={s<=value?'#d4a84b':'none'} stroke={s<=value?'#d4a84b':'#5e5349'} strokeWidth="2">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-      ))}
-    </div>
-  )
-}
-
-const CloseIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-const ChartIcon = ({ size=24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>

@@ -7,6 +7,7 @@ import { useSessions } from '@/hooks/useSessions'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLang } from '@/contexts/LangContext'
 import { cropUrl } from '@/lib/cloudinaryCrop'
+import { CloseIcon } from '@/components/Icons'
 
 const PHASE = { INTRO: 'intro', EXERCISE: 'exercise', REST: 'rest', DONE: 'done' }
 
@@ -237,7 +238,7 @@ export default function SessionPage() {
   return (
     <div className="session-page">
       <div className="session-topbar">
-        <button className="btn btn-ghost btn-sm" onClick={()=>{ if(confirm('¿Salir de la sesión?')) router.push('/rutinas') }}><CloseIcon /></button>
+        <button className="btn btn-ghost btn-sm" onClick={()=>{ if(confirm('¿Salir de la sesión?')) router.push('/rutinas') }}><CloseIcon size={14} /></button>
         <div className="session-timer">{fmt(elapsed)}</div>
         <div className="session-progress-text">{exIdx+1} / {routine.exercises.length}</div>
       </div>
@@ -334,7 +335,6 @@ function StarRating({ value, onChange, size='md' }) {
   )
 }
 
-const CloseIcon  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 const SkipIcon   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
 const CheckMark  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
 const CheckSide  = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
