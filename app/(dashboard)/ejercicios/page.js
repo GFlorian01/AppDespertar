@@ -69,6 +69,22 @@ export default function EjerciciosPage() {
     } finally { setSaving(false) }
   }
 
+  // Save this exercise but keep the uploaded video loaded, so another clip can be
+  // cut from it right away without re-uploading the same file
+  const handleSaveAndContinue = async () => {
+    if (!form.name.trim() || !form.videoUrl) return
+    setSaving(true)
+    try {
+      await addExercise(form)
+      setForm(f => ({
+        ...EMPTY,
+        category: f.category, isPublic: f.isPublic,
+        videoUrl: f.videoUrl, publicId: f.publicId, videoDuration: f.videoDuration,
+        trimEnd: f.videoDuration,
+      }))
+    } finally { setSaving(false) }
+  }
+
   const handleDelete = async (ex) => {
     if (!confirm(`¿Eliminar "${ex.name}"?`)) return
     await deleteExercise(ex)
@@ -199,6 +215,11 @@ export default function EjerciciosPage() {
 
             <div className="fullpanel-left-actions">
               <button type="button" className="btn btn-ghost" onClick={closeForm}>Cancelar</button>
+              {!editing && (
+                <button type="button" className="btn btn-ghost" onClick={handleSaveAndContinue} disabled={saving || uploadProgress !== null || !form.videoUrl || !form.name.trim()}>
+                  Guardar y cortar otro
+                </button>
+              )}
               <button type="submit" className="btn btn-primary" disabled={saving || uploadProgress !== null || !form.videoUrl}>
                 {saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Agregar ejercicio'}
               </button>
