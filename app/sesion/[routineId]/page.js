@@ -6,6 +6,7 @@ import { useRoutines } from '@/hooks/useRoutines'
 import { useSessions } from '@/hooks/useSessions'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLang } from '@/contexts/LangContext'
+import { cropUrl } from '@/lib/cloudinaryCrop'
 
 const PHASE = { INTRO: 'intro', EXERCISE: 'exercise', REST: 'rest', DONE: 'done' }
 
@@ -244,7 +245,7 @@ export default function SessionPage() {
 
       <div className="session-main">
         <div className="session-video-wrap">
-          <video ref={videoRef} src={currentEx.videoUrl} className="session-video" muted playsInline preload="metadata" />
+          <video ref={videoRef} src={cropUrl(currentEx.videoUrl, currentEx.cropAspect, currentEx.cropX, currentEx.cropY)} className="session-video" muted playsInline preload="metadata" />
           {phase === PHASE.INTRO && (
             <div className="intro-overlay">
               <div className="intro-icon">🌅</div>
@@ -307,7 +308,7 @@ export default function SessionPage() {
       <div className="session-queue">
         {routine.exercises.map((ex,i)=>(
           <div key={i} className={`queue-item ${i===exIdx?'active':i<exIdx?'done':''}`}>
-            <div className="queue-thumb"><video src={ex.videoUrl} muted playsInline preload="metadata" className="queue-video" onLoadedMetadata={e => { e.target.currentTime = ex.trimStart || 0 }} /></div>
+            <div className="queue-thumb"><video src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY)} muted playsInline preload="metadata" className="queue-video" onLoadedMetadata={e => { e.target.currentTime = ex.trimStart || 0 }} /></div>
             <div className="queue-info"><span className="queue-name">{ex.exerciseName}</span><span className="queue-meta">{ex.sets}×{ex.reps}</span></div>
             {i<exIdx && <CheckMark />}
           </div>

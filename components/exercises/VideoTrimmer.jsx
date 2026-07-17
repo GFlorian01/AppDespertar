@@ -3,12 +3,22 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { detectScenes } from '@/lib/sceneDetect'
 
-export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, onChange }) {
+const CROP_ASPECTS = [
+  { value: 'original', label: 'Original', ratio: null },
+  { value: '1:1',       label: 'Cuadrado', ratio: 1 },
+  { value: '9:16',      label: 'Vertical', ratio: 9 / 16 },
+  { value: '16:9',      label: 'Horizontal', ratio: 16 / 9 },
+]
+
+export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, onChange, cropAspect = 'original', cropX = 0.5, cropY = 0.5, onCropChange }) {
   const videoRef  = useRef(null)
   const railRef   = useRef(null)
+  const cropFrameRef = useRef(null)
   const [currentTime, setCurrentTime] = useState(trimStart || 0)
   const [dragging,    setDragging]    = useState(null)
   const [playing,     setPlaying]     = useState(true)
+  const [videoDims,   setVideoDims]   = useState(null)
+  const [cropDragging, setCropDragging] = useState(false)
 
   // Scene detection state
   const [scenes,         setScenes]         = useState(null)
@@ -81,6 +91,33 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
     }
   }, [dragging, start, end, onChange, getPct, fromPct])
 
+  // Crop box drag logic
+  const cropRatio = CROP_ASPECTS.find(a => a.value === cropAspect)?.ratio
+  useEffect(() => {
+    if (!cropDragging) return
+    const onMove = (e) => {
+      e.preventDefault()
+      const frame = cropFrameRef.current; if (!frame) return
+      const { left, top, width, height } = frame.getBoundingClientRect()
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY
+      const x = Math.max(0, Math.min(1, (clientX - left) / width))
+      const y = Math.max(0, Math.min(1, (clientY - top) / height))
+      onCropChange({ cropAspect, cropX: x, cropY: y })
+    }
+    const onUp = () => setCropDragging(false)
+    window.addEventListener('mousemove', onMove, { passive: false })
+    window.addEventListener('mouseup', onUp)
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onUp)
+    }
+  }, [cropDragging, cropAspect, onCropChange])
+
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return
     if (vid.paused) { vid.currentTime = start; vid.play(); setPlaying(true) }
@@ -123,6 +160,17 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
   const endPct     = toPercent(end)
   const currentPct = toPercent(currentTime)
 
+  // Crop box size (fraction of frame) — largest box of cropRatio inscribed in the video frame
+  let box = null
+  if (cropRatio && videoDims) {
+    const frameRatio = videoDims.w / videoDims.h
+    const boxW = cropRatio >= frameRatio ? 1 : cropRatio / frameRatio
+    const boxH = cropRatio >= frameRatio ? frameRatio / cropRatio : 1
+    const cx = Math.max(boxW / 2, Math.min(1 - boxW / 2, cropX))
+    const cy = Math.max(boxH / 2, Math.min(1 - boxH / 2, cropY))
+    box = { left: (cx - boxW / 2) * 100, top: (cy - boxH / 2) * 100, width: boxW * 100, height: boxH * 100 }
+  }
+
   return (
     <div className="vt-root">
 
@@ -134,6 +182,7 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
           className="vt-video"
           crossOrigin="anonymous"
           autoPlay muted playsInline
+          onLoadedMetadata={e => setVideoDims({ w: e.target.videoWidth, h: e.target.videoHeight })}
         />
 
         {/* Corner controls — small, don't block the video */}
@@ -145,7 +194,36 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
         {/* Start / End labels on video */}
         <div className="vt-marker-label vt-marker-start">▶ {fmt(start)}</div>
         <div className="vt-marker-label vt-marker-end">{fmt(end)} ◀</div>
+
+        {/* Crop overlay — sized to exactly match the video's contain-rendered box */}
+        {onCropChange && videoDims && (
+          <div className="vt-crop-frame" ref={cropFrameRef} style={{ aspectRatio: `${videoDims.w} / ${videoDims.h}` }}>
+            {box && (
+              <div
+                className="vt-crop-box"
+                style={{ left: `${box.left}%`, top: `${box.top}%`, width: `${box.width}%`, height: `${box.height}%` }}
+                onMouseDown={(e) => { e.preventDefault(); setCropDragging(true) }}
+                onTouchStart={(e) => { e.preventDefault(); setCropDragging(true) }}
+              />
+            )}
+          </div>
+        )}
       </div>
+
+      {onCropChange && (
+        <div className="vt-crop-aspects">
+          {CROP_ASPECTS.map(a => (
+            <button
+              key={a.value}
+              type="button"
+              className={`vt-crop-aspect-btn ${cropAspect === a.value ? 'active' : ''}`}
+              onClick={() => onCropChange({ cropAspect: a.value, cropX: 0.5, cropY: 0.5 })}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ── Scene detection ── */}
       <div className="vt-auto-section">

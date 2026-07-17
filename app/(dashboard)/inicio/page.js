@@ -7,6 +7,7 @@ import { useLang } from '@/contexts/LangContext'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useExercises } from '@/hooks/useExercises'
 import { useSessions } from '@/hooks/useSessions'
+import { cropUrl } from '@/lib/cloudinaryCrop'
 
 export default function HomePage() {
   const { user } = useAuth()
@@ -107,7 +108,7 @@ export default function HomePage() {
                 <div className="hrc-thumbs">
                   {r.exercises?.slice(0, 2).map((ex, i) => (
                     <div key={i} className="hrc-thumb">
-                      <TrimmedThumb src={ex.videoUrl} trimStart={ex.trimStart || 0} trimEnd={ex.trimEnd || 0} className="hrc-video" />
+                      <TrimmedThumb src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY)} trimStart={ex.trimStart || 0} trimEnd={ex.trimEnd || 0} className="hrc-video" />
                     </div>
                   ))}
                 </div>

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRoutines } from '@/hooks/useRoutines'
 import { useExercises } from '@/hooks/useExercises'
+import { cropUrl } from '@/lib/cloudinaryCrop'
 
 const EMPTY = { name: '', description: '', exercises: [] }
 
@@ -20,7 +21,7 @@ export default function RutinasPage() {
   const openEdit = (r) => { setEditing(r.id); setForm({ name: r.name, description: r.description || '', exercises: r.exercises || [] }); setShowForm(true) }
   const closeForm = () => { setShowForm(false); setEditing(null) }
 
-  const addEx = (ex) => setForm(f => ({ ...f, exercises: [...f.exercises, { exerciseId: ex.id, exerciseName: ex.name, category: ex.category, unilateral: ex.unilateral || false, videoUrl: ex.videoUrl, trimStart: ex.trimStart || 0, trimEnd: ex.trimEnd || ex.videoDuration || 0, sets: 3, reps: 10, restTime: 30 }] }))
+  const addEx = (ex) => setForm(f => ({ ...f, exercises: [...f.exercises, { exerciseId: ex.id, exerciseName: ex.name, category: ex.category, unilateral: ex.unilateral || false, videoUrl: ex.videoUrl, trimStart: ex.trimStart || 0, trimEnd: ex.trimEnd || ex.videoDuration || 0, cropAspect: ex.cropAspect || 'original', cropX: ex.cropX ?? 0.5, cropY: ex.cropY ?? 0.5, sets: 3, reps: 10, restTime: 30 }] }))
   const updEx = (idx, field, val) => setForm(f => { const exs = [...f.exercises]; exs[idx] = { ...exs[idx], [field]: Number(val) }; return { ...f, exercises: exs } })
   const remEx = (idx) => setForm(f => ({ ...f, exercises: f.exercises.filter((_, i) => i !== idx) }))
   const moveEx = (idx, dir) => setForm(f => { const exs = [...f.exercises]; const to = idx + dir; if (to < 0 || to >= exs.length) return f; [exs[idx], exs[to]] = [exs[to], exs[idx]]; return { ...f, exercises: exs } })
@@ -78,7 +79,7 @@ export default function RutinasPage() {
                 <div className="routine-card-thumbs">
                   {r.exercises?.slice(0, 3).map((ex, i) => (
                     <div key={i} className="mini-thumb">
-                      <video src={ex.videoUrl} muted playsInline preload="metadata" className="mini-video"
+                      <video src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY)} muted playsInline preload="metadata" className="mini-video"
                         onLoadedMetadata={e => { e.target.currentTime = ex.trimStart || 0 }}
                         onMouseEnter={e => e.target.play()}
                         onMouseLeave={e => { e.target.pause(); e.target.currentTime = ex.trimStart || 0 }} />
@@ -157,7 +158,7 @@ export default function RutinasPage() {
                         {availableEx.map(ex => (
                           <button key={ex.id} type="button" className="picker-item" onClick={() => addEx(ex)}>
                             <div className="picker-thumb">
-                              <video src={ex.videoUrl} muted playsInline preload="metadata" className="picker-video"
+                              <video src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY)} muted playsInline preload="metadata" className="picker-video"
                                 onLoadedMetadata={e => { e.target.currentTime = ex.trimStart || 0 }}
                                 onMouseEnter={e => e.target.play()}
                                 onMouseLeave={e => { e.target.pause(); e.target.currentTime = ex.trimStart || 0 }} />
