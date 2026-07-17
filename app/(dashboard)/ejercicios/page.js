@@ -168,7 +168,11 @@ export default function EjerciciosPage() {
           <button className="btn-icon" onClick={closeForm}><CloseIcon /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="fullpanel-body">
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={e => { if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') e.preventDefault() }}
+          className="fullpanel-body"
+        >
 
           {/* ── Panel izquierdo: campos ── */}
           <div className="ex-form-fields">
