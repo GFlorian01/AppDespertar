@@ -14,5 +14,5 @@ export default function TrimmedVideo({ src, trimStart = 0, trimEnd = 0, classNam
     vid.addEventListener('timeupdate', onTime)
     return () => vid.removeEventListener('timeupdate', onTime)
   }, [src, start, end])
-  return <video ref={ref} src={src} className={className} muted playsInline preload="metadata" />
+  return <video ref={ref} src={src} className={className} muted playsInline preload="auto" />
 }
