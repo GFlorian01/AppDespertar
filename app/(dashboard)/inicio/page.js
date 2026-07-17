@@ -108,7 +108,7 @@ export default function HomePage() {
                 <div className="hrc-thumbs">
                   {r.exercises?.slice(0, 2).map((ex, i) => (
                     <div key={i} className="hrc-thumb">
-                      <TrimmedThumb src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY)} trimStart={ex.trimStart || 0} trimEnd={ex.trimEnd || 0} className="hrc-video" />
+                      <TrimmedThumb src={cropUrl(ex.videoUrl, ex.cropAspect, ex.cropX, ex.cropY, ex.cropW, ex.cropH)} trimStart={ex.trimStart || 0} trimEnd={ex.trimEnd || 0} className="hrc-video" />
                     </div>
                   ))}
                 </div>

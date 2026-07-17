@@ -12,7 +12,7 @@ const CATEGORIES = [
   { value: 'elasticidad',  label: 'Elasticidad',   color: 'yellow' },
   { value: 'postura',      label: 'Postura',        color: 'danger' },
 ]
-const EMPTY = { name: '', category: 'estiramiento', description: '', unilateral: false, isPublic: false, videoUrl: '', publicId: '', videoDuration: 0, trimStart: 0, trimEnd: 0, cropAspect: 'original', cropX: 0.5, cropY: 0.5 }
+const EMPTY = { name: '', category: 'estiramiento', description: '', unilateral: false, isPublic: false, videoUrl: '', publicId: '', videoDuration: 0, trimStart: 0, trimEnd: 0, cropAspect: 'original', cropX: 0, cropY: 0, cropW: 1, cropH: 1 }
 
 export default function EjerciciosPage() {
   const { user } = useAuth()
@@ -33,7 +33,7 @@ export default function EjerciciosPage() {
       videoUrl: ex.videoUrl, publicId: ex.publicId || '',
       videoDuration: ex.videoDuration || 0,
       trimStart: ex.trimStart || 0, trimEnd: ex.trimEnd || ex.videoDuration || 0,
-      cropAspect: ex.cropAspect || 'original', cropX: ex.cropX ?? 0.5, cropY: ex.cropY ?? 0.5,
+      cropAspect: ex.cropAspect || 'original', cropX: ex.cropX ?? 0, cropY: ex.cropY ?? 0, cropW: ex.cropW ?? 1, cropH: ex.cropH ?? 1,
     })
     setShowForm(true)
   }
@@ -46,7 +46,7 @@ export default function EjerciciosPage() {
     vid.src = localUrl
     vid.onloadedmetadata = async () => {
       const dur = vid.duration
-      setForm(f => ({ ...f, videoDuration: dur, trimStart: 0, trimEnd: dur, videoUrl: localUrl, cropAspect: 'original', cropX: 0.5, cropY: 0.5 }))
+      setForm(f => ({ ...f, videoDuration: dur, trimStart: 0, trimEnd: dur, videoUrl: localUrl, cropAspect: 'original', cropX: 0, cropY: 0, cropW: 1, cropH: 1 }))
       URL.revokeObjectURL(localUrl)
       try {
         const { url, publicId } = await uploadVideo(file, setUploadProgress)
@@ -248,7 +248,9 @@ export default function EjerciciosPage() {
                   cropAspect={form.cropAspect}
                   cropX={form.cropX}
                   cropY={form.cropY}
-                  onCropChange={({ cropAspect, cropX, cropY }) => setForm(f => ({ ...f, cropAspect, cropX, cropY }))}
+                  cropW={form.cropW}
+                  cropH={form.cropH}
+                  onCropChange={({ cropAspect, cropX, cropY, cropW, cropH }) => setForm(f => ({ ...f, cropAspect, cropX, cropY, cropW, cropH }))}
                 />
               </div>
             )}
@@ -285,7 +287,7 @@ function ExCard({ exercise, isOwn, onEdit, onDelete }) {
     <div className="exercise-card card animate-in">
       <div className="exercise-thumb">
         <TrimmedVideo
-          src={cropUrl(exercise.videoUrl, exercise.cropAspect, exercise.cropX, exercise.cropY)}
+          src={cropUrl(exercise.videoUrl, exercise.cropAspect, exercise.cropX, exercise.cropY, exercise.cropW, exercise.cropH)}
           trimStart={exercise.trimStart || 0}
           trimEnd={exercise.trimEnd || exercise.videoDuration || 0}
           className="thumb-video"

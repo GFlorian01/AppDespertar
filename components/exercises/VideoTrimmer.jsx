@@ -8,9 +8,11 @@ const CROP_ASPECTS = [
   { value: '1:1',       label: 'Cuadrado', ratio: 1 },
   { value: '9:16',      label: 'Vertical', ratio: 9 / 16 },
   { value: '16:9',      label: 'Horizontal', ratio: 16 / 9 },
+  { value: 'custom',    label: 'Personalizado', ratio: null },
 ]
+const MIN_CROP = 0.15 // smallest side of a custom crop box, as a fraction of the frame
 
-export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, onChange, cropAspect = 'original', cropX = 0.5, cropY = 0.5, onCropChange }) {
+export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, onChange, cropAspect = 'original', cropX = 0, cropY = 0, cropW = 1, cropH = 1, onCropChange }) {
   const videoRef  = useRef(null)
   const railRef   = useRef(null)
   const cropFrameRef = useRef(null)
@@ -18,7 +20,7 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
   const [dragging,    setDragging]    = useState(null)
   const [playing,     setPlaying]     = useState(true)
   const [videoDims,   setVideoDims]   = useState(null)
-  const [cropDragging, setCropDragging] = useState(false)
+  const [cropDragging, setCropDragging] = useState(null) // 'move' | 'resize' | null
 
   // Scene detection state
   const [scenes,         setScenes]         = useState(null)
@@ -91,8 +93,7 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
     }
   }, [dragging, start, end, onChange, getPct, fromPct])
 
-  // Crop box drag logic
-  const cropRatio = CROP_ASPECTS.find(a => a.value === cropAspect)?.ratio
+  // Crop box drag logic — 'move' repositions the box, 'resize' (custom only) resizes it from its top-left anchor
   useEffect(() => {
     if (!cropDragging) return
     const onMove = (e) => {
@@ -103,9 +104,18 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
       const clientY = e.touches ? e.touches[0].clientY : e.clientY
       const x = Math.max(0, Math.min(1, (clientX - left) / width))
       const y = Math.max(0, Math.min(1, (clientY - top) / height))
-      onCropChange({ cropAspect, cropX: x, cropY: y })
+
+      if (cropDragging === 'resize') {
+        const w = Math.max(MIN_CROP, Math.min(1 - cropX, x - cropX))
+        const h = Math.max(MIN_CROP, Math.min(1 - cropY, y - cropY))
+        onCropChange({ cropAspect, cropX, cropY, cropW: w, cropH: h })
+      } else {
+        const nx = Math.max(0, Math.min(1 - cropW, x - cropW / 2))
+        const ny = Math.max(0, Math.min(1 - cropH, y - cropH / 2))
+        onCropChange({ cropAspect, cropX: nx, cropY: ny, cropW, cropH })
+      }
     }
-    const onUp = () => setCropDragging(false)
+    const onUp = () => setCropDragging(null)
     window.addEventListener('mousemove', onMove, { passive: false })
     window.addEventListener('mouseup', onUp)
     window.addEventListener('touchmove', onMove, { passive: false })
@@ -116,7 +126,7 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
       window.removeEventListener('touchmove', onMove)
       window.removeEventListener('touchend', onUp)
     }
-  }, [cropDragging, cropAspect, onCropChange])
+  }, [cropDragging, cropAspect, cropX, cropY, cropW, cropH, onCropChange])
 
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return
@@ -160,15 +170,30 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
   const endPct     = toPercent(end)
   const currentPct = toPercent(currentTime)
 
-  // Crop box size (fraction of frame) — largest box of cropRatio inscribed in the video frame
-  let box = null
-  if (cropRatio && videoDims) {
+  // Crop box (fraction of frame -> %) — cropX/Y/W/H are already resolved by handleAspect / drag
+  const box = cropAspect !== 'original'
+    ? { left: cropX * 100, top: cropY * 100, width: cropW * 100, height: cropH * 100 }
+    : null
+
+  // Picking an aspect sets the box: presets get the largest inscribed box centered in the frame,
+  // custom keeps whatever box is already there (or a sane default) so the user can then resize it
+  const handleAspect = (value) => {
+    if (value === 'original') { onCropChange({ cropAspect: 'original', cropX: 0, cropY: 0, cropW: 1, cropH: 1 }); return }
+    if (value === 'custom') {
+      const hasBox = cropAspect !== 'original'
+      onCropChange({
+        cropAspect: 'custom',
+        cropX: hasBox ? cropX : 0.1, cropY: hasBox ? cropY : 0.1,
+        cropW: hasBox ? cropW : 0.8, cropH: hasBox ? cropH : 0.8,
+      })
+      return
+    }
+    if (!videoDims) return
     const frameRatio = videoDims.w / videoDims.h
-    const boxW = cropRatio >= frameRatio ? 1 : cropRatio / frameRatio
-    const boxH = cropRatio >= frameRatio ? frameRatio / cropRatio : 1
-    const cx = Math.max(boxW / 2, Math.min(1 - boxW / 2, cropX))
-    const cy = Math.max(boxH / 2, Math.min(1 - boxH / 2, cropY))
-    box = { left: (cx - boxW / 2) * 100, top: (cy - boxH / 2) * 100, width: boxW * 100, height: boxH * 100 }
+    const ratio = CROP_ASPECTS.find(a => a.value === value).ratio
+    const w = ratio >= frameRatio ? 1 : ratio / frameRatio
+    const h = ratio >= frameRatio ? frameRatio / ratio : 1
+    onCropChange({ cropAspect: value, cropX: (1 - w) / 2, cropY: (1 - h) / 2, cropW: w, cropH: h })
   }
 
   return (
@@ -202,9 +227,17 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
               <div
                 className="vt-crop-box"
                 style={{ left: `${box.left}%`, top: `${box.top}%`, width: `${box.width}%`, height: `${box.height}%` }}
-                onMouseDown={(e) => { e.preventDefault(); setCropDragging(true) }}
-                onTouchStart={(e) => { e.preventDefault(); setCropDragging(true) }}
-              />
+                onMouseDown={(e) => { e.preventDefault(); setCropDragging('move') }}
+                onTouchStart={(e) => { e.preventDefault(); setCropDragging('move') }}
+              >
+                {cropAspect === 'custom' && (
+                  <div
+                    className="vt-crop-resize"
+                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setCropDragging('resize') }}
+                    onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); setCropDragging('resize') }}
+                  />
+                )}
+              </div>
             )}
           </div>
         )}
@@ -217,7 +250,7 @@ export default function VideoTrimmer({ videoUrl, duration, trimStart, trimEnd, o
               key={a.value}
               type="button"
               className={`vt-crop-aspect-btn ${cropAspect === a.value ? 'active' : ''}`}
-              onClick={() => onCropChange({ cropAspect: a.value, cropX: 0.5, cropY: 0.5 })}
+              onClick={() => handleAspect(a.value)}
             >
               {a.label}
             </button>
