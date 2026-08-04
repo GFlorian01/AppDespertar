@@ -147,7 +147,7 @@ export default function SessionPage() {
     }])
     setExRatings(r => [...r, 0])
     if (isLastEx) { setPhase(PHASE.DONE) }
-    else          { setExIdx(i=>i+1); setSetIdx(0); setPhase(PHASE.EXERCISE) }
+    else          { setExIdx(i=>i+1); setSetIdx(0); setPhase(PHASE.REST) }
   }, [currentEx, setIdx, isLastEx])
 
   const handleMainBtn = useCallback(() => {

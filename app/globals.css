@@ -925,9 +925,17 @@ textarea.form-input { min-height: 100px; resize: none; }
 
   /* Session */
   .session-main { flex-direction: column; }
-  .session-video-wrap { flex: none; aspect-ratio: 9/16; max-height: 50vh; height: auto; }
-  .session-controls { width: 100%; min-width: 0; border-left: none; border-top: 1px solid var(--border); padding: 14px 12px; gap: 12px; }
-  .session-main-btn { padding: 18px 20px !important; font-size: 17px !important; }
+  .session-video-wrap { flex: 1 1 auto; min-height: 0; }
+  .session-controls { flex: 0 0 auto; width: 100%; min-width: 0; border-left: none; border-top: 1px solid var(--border); padding: 10px 12px; gap: 8px; overflow-y: visible; }
+  .session-ex-name { font-size: 1.1rem; }
+  .session-stat-box { padding: 8px; }
+  .session-stat-value { font-size: 30px; }
+  .session-stat-label { font-size: 11px; }
+  .set-dot { width: 22px; height: 22px; }
+  .session-set-label { font-size: 12px; }
+  .sides-indicator { padding: 8px 10px; }
+  .session-actions { gap: 6px; }
+  .session-main-btn { padding: 12px 18px !important; font-size: 15px !important; }
   .done-stats { grid-template-columns: repeat(2,1fr); }
 
   /* Page header compacto */
