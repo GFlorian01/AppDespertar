@@ -31,10 +31,12 @@ export default function SessionPage() {
   const [finalRating, setFinalRating] = useState(0)
   const [saving,      setSaving]      = useState(false)
   const [sidesDone,   setSidesDone]   = useState(0)
+  const [holdSecs,    setHoldSecs]    = useState(0)
 
   const videoRef       = useRef(null)
   const sessionStart   = useRef(Date.now())
   const restRef        = useRef(null)
+  const holdRef        = useRef(null)
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/login')
@@ -157,6 +159,19 @@ export default function SessionPage() {
     else           { setSetIdx(i=>i+1); setPhase(PHASE.REST) }
   }, [currentEx, sidesDone, isLastSet, recordAndAdvance])
 
+  // Timed exercises: countdown replaces the manual "set done" tap
+  useEffect(() => {
+    if (phase !== PHASE.EXERCISE || !currentEx?.timed) return
+    setHoldSecs(currentEx.reps)
+    holdRef.current = setInterval(() => {
+      setHoldSecs(s => {
+        if (s <= 1) { clearInterval(holdRef.current); handleMainBtn(); return 0 }
+        return s - 1
+      })
+    }, 1000)
+    return () => clearInterval(holdRef.current)
+  }, [phase, exIdx, setIdx, sidesDone, currentEx, handleMainBtn])
+
   const skipExercise = useCallback(() => { recordAndAdvance(true) }, [recordAndAdvance])
 
   const handleSave = async () => {
@@ -278,7 +293,10 @@ export default function SessionPage() {
         <div className="session-controls">
           <div className="session-ex-info">
             <h2 className="session-ex-name">{currentEx.exerciseName}</h2>
-            <p className="session-ex-meta">{currentEx.reps} reps · {currentEx.sets} {t('rtform.sets').toLowerCase()}</p>
+          </div>
+          <div className="session-stat-box">
+            <span className="session-stat-value">{currentEx.timed ? holdSecs : currentEx.reps}</span>
+            <span className="session-stat-label">{currentEx.timed ? (lang === 'en' ? 'Seconds' : 'Segundos') : 'Reps'}</span>
           </div>
           <div className="session-set-indicator">
             {Array.from({length:currentEx.sets}).map((_,i)=>(

@@ -22,8 +22,9 @@ export default function RutinasPage() {
   const openEdit = (r) => { setEditing(r.id); setForm({ name: r.name, description: r.description || '', exercises: r.exercises || [] }); setShowForm(true) }
   const closeForm = () => { setShowForm(false); setEditing(null) }
 
-  const addEx = (ex) => setForm(f => ({ ...f, exercises: [...f.exercises, { exerciseId: ex.id, exerciseName: ex.name, category: ex.category, unilateral: ex.unilateral || false, videoUrl: ex.videoUrl, trimStart: ex.trimStart || 0, trimEnd: ex.trimEnd || ex.videoDuration || 0, cropAspect: ex.cropAspect || 'original', cropX: ex.cropX ?? 0, cropY: ex.cropY ?? 0, cropW: ex.cropW ?? 1, cropH: ex.cropH ?? 1, sets: 3, reps: 10, restTime: 30 }] }))
+  const addEx = (ex) => setForm(f => ({ ...f, exercises: [...f.exercises, { exerciseId: ex.id, exerciseName: ex.name, category: ex.category, unilateral: ex.unilateral || false, videoUrl: ex.videoUrl, trimStart: ex.trimStart || 0, trimEnd: ex.trimEnd || ex.videoDuration || 0, cropAspect: ex.cropAspect || 'original', cropX: ex.cropX ?? 0, cropY: ex.cropY ?? 0, cropW: ex.cropW ?? 1, cropH: ex.cropH ?? 1, sets: 3, reps: 10, restTime: 30, timed: false }] }))
   const updEx = (idx, field, val) => setForm(f => { const exs = [...f.exercises]; exs[idx] = { ...exs[idx], [field]: Number(val) }; return { ...f, exercises: exs } })
+  const toggleTimed = (idx) => setForm(f => { const exs = [...f.exercises]; exs[idx] = { ...exs[idx], timed: !exs[idx].timed }; return { ...f, exercises: exs } })
   const remEx = (idx) => setForm(f => ({ ...f, exercises: f.exercises.filter((_, i) => i !== idx) }))
   const moveEx = (idx, dir) => setForm(f => { const exs = [...f.exercises]; const to = idx + dir; if (to < 0 || to >= exs.length) return f; [exs[idx], exs[to]] = [exs[to], exs[idx]]; return { ...f, exercises: exs } })
 
@@ -196,7 +197,13 @@ export default function RutinasPage() {
                               </div>
                             </div>
                             <div className="order-item-params">
-                              {[['sets', 'Series'], ['reps', 'Reps'], ['restTime', 'Descanso (s)']].map(([field, label]) => (
+                              <div className="param-group">
+                                <span>Modo</span>
+                                <button type="button" className={`mode-toggle ${ex.timed ? 'active' : ''}`} onClick={() => toggleTimed(idx)}>
+                                  {ex.timed ? '⏱ Tiempo' : '# Reps'}
+                                </button>
+                              </div>
+                              {[['sets', 'Series'], ['reps', ex.timed ? 'Segundos' : 'Reps'], ['restTime', 'Descanso (s)']].map(([field, label]) => (
                                 <label key={field} className="param-group">
                                   <span>{label}</span>
                                   <input type="number" min="1" max="300" value={ex[field]} onChange={e => updEx(idx, field, e.target.value)} />

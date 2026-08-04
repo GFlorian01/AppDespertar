@@ -712,6 +712,8 @@ textarea.form-input { min-height: 100px; resize: none; }
 .param-group span { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
 .param-group input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; color: var(--text); font-size: 13px; font-weight: 600; font-family: var(--font-body); width: 100%; text-align: center; }
 .param-group input:focus { outline: none; border-color: var(--accent); }
+.mode-toggle { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+.mode-toggle.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 
 /* ── Session page ── */
 .session-page { height: 100vh; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
@@ -735,6 +737,9 @@ textarea.form-input { min-height: 100px; resize: none; }
 .session-ex-info { display: flex; flex-direction: column; gap: 4px; }
 .session-ex-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; line-height: 1.2; color: var(--text); }
 .session-ex-meta { font-size: 13px; color: var(--text-muted); }
+.session-stat-box { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.session-stat-value { font-size: 48px; font-weight: 700; line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
+.session-stat-label { font-size: 14px; color: var(--text-muted); }
 .session-set-indicator { display: flex; gap: 8px; flex-wrap: wrap; }
 .set-dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); background: transparent; transition: all .2s; }
 .set-dot.done { background: var(--sage); border-color: var(--sage); }
